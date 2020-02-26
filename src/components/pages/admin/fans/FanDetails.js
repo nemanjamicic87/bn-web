@@ -323,7 +323,7 @@ class Fan extends Component {
 								: "Facebook not connected"}
 						</Typography>
 					</div>
-					{user.isSuper  ? (
+					{user.isAdmin  ? (
 						<div>
 							<Button
 								onClick={this.onDeleteAccount.bind(this)}
