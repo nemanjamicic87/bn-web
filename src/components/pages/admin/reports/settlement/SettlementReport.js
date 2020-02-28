@@ -417,7 +417,7 @@ class SettlementReport extends Component {
 			eventList
 		} = this.state;
 
-		const { isPostEventSettlement, displayDateRange } = settlement;
+		const { isPostEventSettlement, displayDateRange, status } = settlement;
 
 		let onAddAdjustment = null;
 		if (!printVersion && user.isAdmin) {
@@ -427,7 +427,7 @@ class SettlementReport extends Component {
 		return (
 			<React.Fragment>
 				<Typography className={classes.title}>Grand totals</Typography>
-				<GrandTotalsTable onAddAdjustment={onAddAdjustment} {...grandTotals}/>
+				<GrandTotalsTable status={status} onAddAdjustment={onAddAdjustment} {...grandTotals}/>
 
 				{adjustments && adjustments.length > 0 ? (
 					<React.Fragment>

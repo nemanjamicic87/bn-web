@@ -34,7 +34,8 @@ const GrandTotalsTable = props => {
 		totalRevenueShareInCents,
 		adjustmentsInCents,
 		onAddAdjustment,
-		totalSettlementInCents
+		totalSettlementInCents,
+		status
 	} = props;
 
 	const columnStyles = [
@@ -61,7 +62,7 @@ const GrandTotalsTable = props => {
 				{[
 					<span key={"adjustments"} className={classes.adjustmentText}>
 						Adjustments&nbsp;
-						{onAddAdjustment ? (
+						{onAddAdjustment && status === "Pending" ? (
 							<span className={classes.editText} onClick={onAddAdjustment}>
 								Add Adjustments
 							</span>
@@ -85,7 +86,8 @@ GrandTotalsTable.propTypes = {
 	onAddAdjustment: PropTypes.func,
 	totalFaceInCents: PropTypes.number.isRequired,
 	totalRevenueShareInCents: PropTypes.number.isRequired,
-	totalSettlementInCents: PropTypes.number.isRequired
+	totalSettlementInCents: PropTypes.number.isRequired,
+	status: PropTypes.string
 };
 
 export default withStyles(styles)(GrandTotalsTable);
