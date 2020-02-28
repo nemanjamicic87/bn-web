@@ -65,7 +65,7 @@ class AdjustmentsList extends Component {
 
 	render() {
 		const { showDeleteDialog, id } = this.state;
-		const { classes, adjustments, refreshAdjustments } = this.props;
+		const { classes, adjustments, refreshAdjustments, status } = this.props;
 		return (
 			<div className={classes.root}>
 				{id ? (
@@ -93,13 +93,15 @@ class AdjustmentsList extends Component {
 									{typeEnums[settlement_adjustment_type]}
 								</span>{" "}
 								- {displayCreatedAt}
-								<IconButton
-									className={classes.icon}
-									onClick={this.onDeleteDialogOpen.bind(this, id)}
-									iconUrl="/icons/delete-gray.svg"
-								>
-									Delete
-								</IconButton>
+								{status === "Pending" ? (
+									<IconButton
+										className={classes.icon}
+										onClick={this.onDeleteDialogOpen.bind(this, id)}
+										iconUrl="/icons/delete-gray.svg"
+									>
+										Delete
+									</IconButton>
+								) : null}
 							</Typography>
 							<Typography className={classes.text}>
 								Value: {dollars(amount_in_cents)}
@@ -119,7 +121,8 @@ class AdjustmentsList extends Component {
 AdjustmentsList.propTypes = {
 	classes: PropTypes.object.isRequired,
 	adjustments: PropTypes.array.isRequired,
-	refreshAdjustments: PropTypes.func
+	refreshAdjustments: PropTypes.func,
+	status: PropTypes.string
 };
 
 export default withStyles(styles)(AdjustmentsList);

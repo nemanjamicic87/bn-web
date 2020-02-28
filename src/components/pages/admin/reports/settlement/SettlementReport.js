@@ -431,7 +431,7 @@ class SettlementReport extends Component {
 
 				{adjustments && adjustments.length > 0 ? (
 					<React.Fragment>
-						<AdjustmentsList adjustments={adjustments} refreshAdjustments={this.onAdjustmentAdded.bind(this)}/> <br/>
+						<AdjustmentsList status={status} adjustments={adjustments} refreshAdjustments={this.onAdjustmentAdded.bind(this)}/> <br/>
 						<br/>
 					</React.Fragment>
 				) : null}
