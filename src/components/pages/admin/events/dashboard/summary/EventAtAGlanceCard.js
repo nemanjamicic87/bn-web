@@ -11,6 +11,7 @@ import {
 } from "../../../../../../config/theme";
 import ActivityChart from "./charts/ActivityChart";
 import { dollars } from "../../../../../../helpers/money";
+import moment from "moment";
 
 const styles = theme => {
 	return {
@@ -147,12 +148,18 @@ const EventAtAGlanceCard = ({
 	sold_held,
 	tickets_open,
 	tickets_held,
+	door_time,
+	event_end,
 	venue
 }) => {
 	const totalSold = sold_held + sold_unreserved;
 	const totalOpen = tickets_open;
 	const totalHeld = tickets_held - sold_held;
 	const timezone = venue.timezone;
+	// Bypass cached results while event is happening
+	const bypassCache =
+		moment().utc() > moment.utc(door_time).add({ hours: -1 }) &&
+		moment().utc() < moment.utc(event_end).add({ hours: 1 });
 
 	const values = [
 		{ label: "Sold", value: totalSold, color: "#707ced" },
@@ -212,12 +219,13 @@ const EventAtAGlanceCard = ({
 							timezone={timezone}
 							title={"Transfer Activity"}
 							legendKeyMap={{
-								Completed: "Completed Transfers",
-								Pending: "Pending Transfers",
-								Cancelled: "Cancelled Transfers"
+								Completed: "Completed",
+								Pending: "Pending",
+								Cancelled: "Cancelled"
 							}}
 							measures={["Transfers.count"]}
 							dimensions={["Transfers.status"]}
+							renewQuery={bypassCache}
 						/>
 					</div>
 				</div>
@@ -230,12 +238,13 @@ const EventAtAGlanceCard = ({
 							timezone={timezone}
 							title={"Scanning & Attendance"}
 							legendKeyMap={{
-								"Not Redeemed": "Remaining/No Show",
-								Redeemed: "Tickets Scanned/Attended"
+								"Not Redeemed": "Pending/No Show",
+								Redeemed: "Scanned"
 							}}
 							measures={["Tickets.count"]}
 							dimensions={["Tickets.redeemedStatus"]}
 							segments={["Tickets.purchasedTickets"]}
+							renewQuery={bypassCache}
 						/>
 					</div>
 				</div>

@@ -228,11 +228,7 @@ class RefundOverrideDialog extends Component {
 
 		const { id } = order;
 
-		const {
-			reasonVal,
-			selectedRefundType,
-			selectedRefundOrderItem
-		} = this.state;
+		const { selectedRefundOrderItem } = this.state;
 
 		//TODO use selectedRefundType to adjust which items should be refunded for type===full
 
@@ -280,167 +276,6 @@ class RefundOverrideDialog extends Component {
 					isRefunding: false
 				});
 			});
-	}
-
-	onReasonChange(e) {
-		const reasonVal = e.target.value;
-
-		this.setState({ reasonVal });
-	}
-
-	refundValues(order) {
-		let faceOnlyInCents = 0;
-		let feesOnlyInCents = 0;
-
-		const { total_in_cents, items } = order;
-		const { selectedRefundType } = this.state;
-
-		items.forEach(item => {
-			const { item_type, unit_price_in_cents, quantity } = item;
-
-			switch (item_type) {
-				case "PerUnitFees":
-				case "EventFees":
-				case "CreditCardFees":
-					feesOnlyInCents += unit_price_in_cents * quantity;
-					break;
-				case "Tickets":
-					faceOnlyInCents += unit_price_in_cents * quantity;
-			}
-		});
-
-		//TODO put other options back
-		return {
-			// faceOnly: {
-			// 	label: "Ticket face only",
-			// 	cents: faceOnlyInCents
-			// },
-			// feesOnly: { label: "Fees only", cents: feesOnlyInCents },
-			fullRefund: {
-				label: "Full refund",
-				cents: total_in_cents
-			}
-		};
-	}
-
-	renderDesktopOrderDetails() {
-		const { classes, order, items } = this.props;
-
-		const { order_number, user, total_in_cents } = order;
-
-		const { first_name, last_name, email, id: userId } = user;
-
-		const colStyles = [{ flex: 2 }, { flex: 4 }, { flex: 2 }, { flex: 1 }];
-		const headings = ["Order #", "Purchaser", "Code", "Total"];
-
-		let displayCode = "-";
-		let displayCodeType = "";
-		items.forEach(({ code, code_type }) => {
-			if (code) {
-				displayCode = code;
-			}
-
-			if (code_type) {
-				displayCodeType = code_type;
-			}
-		});
-
-		return (
-			<div className={classes.desktopOrderDetailsContainer}>
-				<div className={classes.desktopOrderRow}>
-					{headings.map((heading, index) => (
-						<Typography
-							key={index}
-							style={colStyles[index]}
-							className={classes.headingText}
-						>
-							{heading}
-						</Typography>
-					))}
-				</div>
-				<div
-					className={classnames({
-						[classes.desktopOrderRow]: true,
-						[classes.desktopOrderRowBorder]: true
-					})}
-				>
-					<Typography style={colStyles[0]}>{order_number}</Typography>
-					<div style={colStyles[1]}>
-						<Typography className={classes.userText}>
-							{first_name} {last_name}
-						</Typography>
-						<Typography className={classes.subText}>{email}</Typography>
-					</div>
-					<div style={colStyles[2]}>
-						<Typography>{displayCode}</Typography>
-						<Typography className={classes.subText}>
-							{displayCodeType}
-						</Typography>
-					</div>
-					<Typography style={colStyles[3]}>
-						{dollars(total_in_cents)}
-					</Typography>
-				</div>
-			</div>
-		);
-	}
-
-	renderMobileOrderDetails() {
-		return <div>{""}</div>;
-	}
-
-	renderDesktopOrderItems() {
-		const colStyles = [
-			{ flex: 3 },
-			{ flex: 3 },
-			{ flex: 4 },
-			{ flex: 2 },
-			{ flex: 1 },
-			{ flex: 2 },
-			{ flex: 2 }
-		];
-
-		const { items } = this.props;
-		const { selectedRefundOrderItem } = this.state;
-
-		return items.map((item, index) => (
-			<TicketCard
-				shortened
-				onCheck={() => this.toggleRefundOrderItem(index)}
-				isChecked={!!selectedRefundOrderItem[index]}
-				key={index}
-				colStyles={colStyles}
-				{...item}
-			/>
-		));
-	}
-
-	renderMobileOrderItems() {
-		const colStyles = [
-			{ flex: 3 },
-			{ flex: 3 },
-			{ flex: 4 },
-			{ flex: 2 },
-			{ flex: 1 },
-			{ flex: 2 },
-			{ flex: 2 }
-		];
-
-		const { items } = this.props;
-		const { selectedRefundOrderItem } = this.state;
-
-		return null;
-		//TODO when designs are found
-		// return items.map((item, index) => (
-		// 	<TicketCard
-		// 		shortened
-		// 		onCheck={() => this.toggleRefundOrderItem(index)}
-		// 		isChecked={!!selectedRefundOrderItem[index]}
-		// 		key={index}
-		// 		colStyles={colStyles}
-		// 		{...item}
-		// 	/>
-		// ));
 	}
 
 	renderSuccessContent() {
@@ -496,16 +331,8 @@ class RefundOverrideDialog extends Component {
 	}
 
 	render() {
-		const { classes, open, order, type } = this.props;
-		const {
-			reasonVal,
-			selectedRefundType,
-			isRefunding,
-			refundAmountInCents,
-			refundSuccessDetails
-		} = this.state;
-
-		const refundValues = this.refundValues(order);
+		const { classes, open, type } = this.props;
+		const { isRefunding, refundSuccessDetails } = this.state;
 
 		let title = `Refund ${type === "full" ? "full " : ""}Override`;
 		if (refundSuccessDetails) {
@@ -513,23 +340,20 @@ class RefundOverrideDialog extends Component {
 		}
 
 		return (
-			<Dialog
-				open={open}
-				title={title}
-				onClose={this.onClose}
-			>
+			<Dialog open={open} title={title} onClose={this.onClose}>
 				{refundSuccessDetails ? (
 					this.renderSuccessContent()
 				) : (
 					<div className={classes.content}>
-						{type === "items" ? (
-							<Typography align="center">
-								<b>Are you sure you want to process the refund?</b><br/>
-								By processing a refund override, funds will not be returned to the original purchaser.
-								Please ensure funds are returned to the customer from an alternate method.
-								Tickets will be returned to sellable inventory. Reporting will be updated to reflect the refund.
-							</Typography>
-						) : null}
+						<Typography align="center">
+							<b>Are you sure you want to process the refund?</b>
+							<br/>
+							By processing a refund override, funds will not be returned to the
+							original purchaser. Please ensure funds are returned to the
+							customer from an alternate method. Tickets will be returned to
+							sellable inventory. Reporting will be updated to reflect the
+							refund.
+						</Typography>
 						<div className={classes.actionButtonsContainer}>
 							<Button
 								style={{ marginRight: 5, width: 150 }}

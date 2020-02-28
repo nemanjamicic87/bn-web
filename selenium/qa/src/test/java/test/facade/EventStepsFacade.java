@@ -63,7 +63,7 @@ public class EventStepsFacade extends BaseFacadeSteps {
 			}
 			
 			homePage.navigate();
-			driver.navigate().refresh();
+			homePage.navigate();
 		}
 	}
 	
@@ -100,14 +100,6 @@ public class EventStepsFacade extends BaseFacadeSteps {
 		} 
 		loginPage.logOut();
 	}
-	
-	public void whenUserLogsInOnTicketsPage(User user) {
-		ticketPage.clickOnAlreadyHaveAnAccount();
-		ticketPage.login(user.getEmailAddress(), user.getPass());
-		if (ticketPage.checkIfMoreEventsAreBeingPurchased()) {
-			ticketPage.getHeader().clickOnShoppingBasketIfPresent();
-		}
-	}
 
 	public void whenUserChangesTicketOptions(Purchase purchase) {
 		ticketsConfirmationPage.clickOnChangeTicketLink();
@@ -122,13 +114,25 @@ public class EventStepsFacade extends BaseFacadeSteps {
 		whenUserClicksOnPurchaseTicketLink();
 	}
 	
-	public void whenUserDoesThePurchses(Purchase purchase, User customer) throws Exception {
+	public void whenUserDoesThePurchses(Purchase purchase, User customer) {
+		whenUserPlacesItemsInBasket(purchase, customer);
+		whenUserEntersCreditCardDetailsAndClicksOnPurchase(purchase.getCreditCard());
+		thenUserIsAtTicketPurchaseSuccessPage();
+	}
+	
+	public void whenUserPlacesItemsInBasket(Purchase purchase, User customer) {
 		whenUserExecutesEventPagesStepsWithoutMapView(purchase.getEvent());
 		whenUserSelectsNumberOfTicketsAndClicksOnContinue(purchase);
 		whenUserLogsInOnTicketsPage(customer);
 		thenUserIsAtConfirmationPage();
-		whenUserEntersCreditCardDetailsAndClicksOnPurchase(purchase.getCreditCard());
-		thenUserIsAtTicketPurchaseSuccessPage();
+	}
+	
+	public void whenUserLogsInOnTicketsPage(User user) {
+		ticketPage.clickOnAlreadyHaveAnAccount();
+		ticketPage.login(user.getEmailAddress(), user.getPass());
+		if (ticketPage.checkIfMoreEventsAreBeingPurchased()) {
+			ticketPage.getHeader().clickOnShoppingBasketIfPresent();
+		}
 	}
 	
 	public DataHolder whenUserExecutesEventPageStepsWithDataAndWithoutMapView(Event event) {
@@ -137,7 +141,7 @@ public class EventStepsFacade extends BaseFacadeSteps {
 		return holder;
 	}
 	
-	public void whenUserExecutesEventPagesStepsWithoutMapView(Event event) throws Exception {
+	public void whenUserExecutesEventPagesStepsWithoutMapView(Event event) {
 		whenUserSearchesAndClicksOnEvent(event);
 		whenUserClicksOnPurchaseTicketLink();
 	}

@@ -2,7 +2,10 @@
 	"user_credentials": {
 		"email_address": "testuser@mailinator.com",
 		"password": "test1111",
-		"test": true
+		"confirm_password": "test1111",
+		"first_name": "test",
+		"last_name": "tariqa",
+		"test":true
 	},
 	"wrong_user_mail_credentials": {
 		"email_address": "wrongmailuserblue@mailinator.com",
@@ -315,9 +318,13 @@
 	},
 	"organization_standard":{
 		"name": "Auto Test12",
-			"phone_number": "1111111111",
-			"time_zone": "Africa/Johannesburg",
-			"location": "Johannesburg, South Africa",
+		"phone_number": "1111111111",
+		"time_zone": "America/Indiana/Knox",
+		"street_address": "1700 SW Jewell Ave, Topeka",
+		"city":"Topeka",
+		"state":"Kansas",
+		"state_abbr":"KS",
+		"postal_code":"66621",
 			"other_fees": {
 				"settlement_type": {
 					"label":"Post event",
@@ -337,9 +344,13 @@
 	},
 	"organization_SAST":{
 		"name":"TA_TZ_Org",
-		"time_zone":"Africa/Johannesburg",
-		"phone_number":"123456789012",
-		"location":"Opera, Douglas Drive, Douglasdale, Johannesburg, South Africa",
+		"phone_number": "123456789012",
+		"time_zone": "America/Indiana/Knox",
+		"street_address": "1700 SW Jewell Ave, Topeka",
+		"city":"Topeka",
+		"state":"Kansas",
+		"state_abbr":"KS",
+		"postal_code":"66621",
 		"other_fees": {
 				"settlement_type": {
 					"label":"Post event",

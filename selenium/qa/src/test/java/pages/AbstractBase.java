@@ -23,6 +23,7 @@ import config.BrowsersEnum;
 import config.DriverFactory;
 import pages.components.datepicker.DatePickerComponent;
 import utils.AccessabilityUtil;
+import utils.ElementLocatorUtil;
 import utils.SeleniumUtils;
 
 public class AbstractBase implements Serializable {
@@ -30,15 +31,22 @@ public class AbstractBase implements Serializable {
 	public WebDriver driver;
 	
 	private AccessabilityUtil accessUtils;
+	
+	private ElementLocatorUtil locatorUtils;
 
 	public AbstractBase(WebDriver driver) {
 		this.driver = driver;
 		PageFactory.initElements(driver, this);
 		this.accessUtils = new AccessabilityUtil(driver);
+		this.locatorUtils = new ElementLocatorUtil(driver);
 	}
 	
 	public WebDriver getDriver() {
 		return driver;
+	}
+	
+	public ElementLocatorUtil getLocatorUtils() {
+		return locatorUtils;
 	}
 	
 	public AccessabilityUtil getAccessUtils() {
@@ -102,14 +110,11 @@ public class AbstractBase implements Serializable {
 		return retVal;
 	}
 
-	public boolean isExplicitlyInvisible(WebElement element) {
-		return isExplicitlyInvisible(15, element);
-	}
-
-	public boolean isExplicitlyInvisible(int waitForSeconds, WebElement element) {
+	public boolean isExplicitlyInvisible(long waitForMills, By element) {
 		boolean retVal = false;
+		long pollingInterval = 200;
 		try {
-			explicitWait(waitForSeconds, ExpectedConditions.invisibilityOf(element));
+			explicitWait(waitForMills, pollingInterval, ExpectedConditions.invisibilityOfElementLocated(element));
 			retVal = true;
 		} catch (Exception e) {
 			retVal = false;
@@ -178,6 +183,7 @@ public class AbstractBase implements Serializable {
 	}
 
 	public void waitVisibilityAndClearFieldSendKeysF(WebElement inputField, String value) {
+		explicitWaitForVisiblity(inputField);
 		String text = inputField.getAttribute("value");
 	    inputField.clear();
 	    String newtext = inputField.getAttribute("value");
@@ -222,6 +228,13 @@ public class AbstractBase implements Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
+	public <T, V> T explicitWait(long timeInMillisec, long poolingInterval, Function<? super WebDriver, V> condition) {
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(driver).withTimeout(timeInMillisec, TimeUnit.MILLISECONDS)
+				.pollingEvery(poolingInterval, TimeUnit.MILLISECONDS);
+		return (T) wait.until(condition);
+	}
+	
+	@SuppressWarnings("unchecked")
 	public <T, V> T explicitWait(int time, long poolingInterval, Function<? super WebDriver, V> condition)
 			throws TimeoutException {
 		return (T) new WebDriverWait(driver, time, poolingInterval).until(condition);
@@ -230,7 +243,7 @@ public class AbstractBase implements Serializable {
 	public void waitForTime(long mills) {
 		try {
 			Wait<WebDriver> wait = new FluentWait<WebDriver>(driver).withTimeout(mills, TimeUnit.MILLISECONDS)
-					.pollingEvery(mills, TimeUnit.MICROSECONDS).ignoring(NoSuchElementException.class)
+					.pollingEvery(mills, TimeUnit.MILLISECONDS).ignoring(NoSuchElementException.class)
 					.ignoring(NotFoundException.class).ignoring(Exception.class);
 			wait.until(new Function<WebDriver, WebElement>() {
 

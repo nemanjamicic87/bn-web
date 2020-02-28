@@ -400,19 +400,21 @@ class ViewEvent extends Component {
 			external_url,
 			min_ticket_price,
 			max_ticket_price,
-			status
+			status,
+			original_promo_image_url
 		} = event;
 		const eventIsCancelled = !!(event && event.cancelled_at);
 
 		const promo_image_url = event.promo_image_url
 			? optimizedImageUrl(event.promo_image_url)
 			: null;
+		const fixed_width_promo_image_url = original_promo_image_url ? optimizedImageUrl(original_promo_image_url, "low", { w: 430 }) : null;
 
 		const ageLimitText = displayAgeLimit(age_limit);
 
 		const mobilePromoImageStyle = {};
-		if (promo_image_url) {
-			mobilePromoImageStyle.backgroundImage = `url(${promo_image_url})`;
+		if (fixed_width_promo_image_url) {
+			mobilePromoImageStyle.backgroundImage = `url(${fixed_width_promo_image_url})`;
 		}
 
 		const priceTagText = this.priceTagText(min_ticket_price, max_ticket_price);
@@ -527,7 +529,7 @@ class ViewEvent extends Component {
 							isAuthenticated={user.isAuthenticated}
 							venue={venue}
 							{...event}
-							promo_image_url={promo_image_url}
+							promo_image_url={fixed_width_promo_image_url}
 							ctaButton={this.renderCallToActionButton("secondary")}
 						/>
 					) : null}
@@ -560,7 +562,7 @@ class ViewEvent extends Component {
 									top: -310,
 									position: "relative"
 								}}
-								imageSrc={promo_image_url}
+								imageSrc={original_promo_image_url || promo_image_url}
 								artists={artists}
 								onHeightChange={this.onOverlayCardHeightChange.bind(this)}
 							>

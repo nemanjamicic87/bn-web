@@ -36,6 +36,7 @@ public class ProjectUtils {
 	public static final String DATE_PICKER_MONTH_YEAR_FORMAT = "MMMM yyyy";
 	public static final String RESOURCE_IMAGE_PATH = "src/test/resources/images/";
 	public static final String CSS_REQUIRED_FIELD_COLOR = "rgba(244, 67, 54, 1)";
+	public static final String CSS_REQUIRED_FIELD_COLOR_RGBA = "rgb(244, 67, 54)";
 
 	public static Integer generateRandomInt(int size) {
 		Random random = new Random();

@@ -7,6 +7,7 @@ import { withStyles } from "@material-ui/core";
 import Bigneon from "../../../helpers/bigneon";
 import notifications from "../../../stores/notifications";
 import Loader from "../../elements/loaders/Loader";
+import { sendReactNativeMessage } from "../../../helpers/reactNative";
 
 const styles = theme => ({
 	root: { padding: theme.spacing.unit }
@@ -54,27 +55,31 @@ class MobileStripeAuth extends Component {
 	onToken = (stripeToken, onError) => {
 		const { id, type } = stripeToken;
 		const data = stripeToken[type];
-
 		// If we receive a credit card Token, pass credit card info back to the WebView
-		if (type === "card") {
-			window.postMessage(
-				JSON.stringify({
-					id: id,
-					type: type,
-					last4: data.last4,
-					brand: data.brand,
-					card_id: data.id,
-					exp_month: data.exp_month,
-					exp_year: data.exp_year,
-					name: data.name
-				})
-			);
+		try {
+			if (type === "card") {
+				sendReactNativeMessage(
+					JSON.stringify({
+						id: id,
+						type: type,
+						last4: data.last4,
+						brand: data.brand,
+						card_id: data.id,
+						exp_month: data.exp_month,
+						exp_year: data.exp_year,
+						name: data.name
+					})
+				);
+			}
+		}catch(e) {
+			onError();
 		}
+
 	};
 
 	onMobileError = (message, _type) => {
 		// If we receive a Stripe error, return it
-		window.postMessage(JSON.stringify({ error: message }));
+		sendReactNativeMessage(JSON.stringify({ error: message }));
 	};
 
 	render() {

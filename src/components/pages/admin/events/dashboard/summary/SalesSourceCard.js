@@ -97,12 +97,10 @@ class SalesSourceCard extends Component {
 	constructor(props) {
 		super(props);
 
-		const cutOffDateString = "2020-01-01T00:00:00";
-
-		const { publish_date } = props;
+		const { publish_date, cutOffDateString } = props;
 		const salesSourceAvailable = moment
 			.utc(publish_date)
-			.isAfter(moment.utc(cutOffDateString));
+			.isAfter(cutOffDateString, "day");
 
 		this.state = {
 			selectedTimePeriod: "all",
@@ -119,7 +117,7 @@ class SalesSourceCard extends Component {
 	}
 
 	onChangeSelectTime(e) {
-		const { on_sale, venue } = this.props;
+		const { on_sale, venue, publish_date, event_end } = this.props;
 		const selectedTimePeriod = e.target.value;
 
 		let startDate = null;
@@ -152,8 +150,12 @@ class SalesSourceCard extends Component {
 			}
 			case "custom": {
 				showCustomDateRange = true;
-				startDate = moment().tz(venue.timezone);
-				endDate = moment().tz(venue.timezone);
+				startDate = moment.utc(publish_date)
+					.tz(venue.timezone)
+					.startOf("day");
+				endDate = moment.utc(event_end)
+					.tz(venue.timezone)
+					.endOf("day");
 
 				break;
 			}
@@ -181,7 +183,7 @@ class SalesSourceCard extends Component {
 	render() {
 		const title = "Sales Source";
 
-		const { classes, token, venue, cubeApiUrl, ...rest } = this.props;
+		const { classes, token, venue, cubeApiUrl, cutOffDateString, ...rest } = this.props;
 		const {
 			selectedTimePeriod,
 			startDate,
@@ -260,7 +262,8 @@ SalesSourceCard.propTypes = {
 	token: PropTypes.string.isRequired,
 	on_sale: PropTypes.string.isRequired,
 	venue: PropTypes.object.isRequired,
-	cubeApiUrl: PropTypes.string.isRequired
+	cubeApiUrl: PropTypes.string.isRequired,
+	cutOffDateString: PropTypes.string
 };
 
 export default withStyles(styles)(SalesSourceCard);

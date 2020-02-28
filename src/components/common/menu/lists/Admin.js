@@ -105,7 +105,14 @@ const AdminList = props => {
 			>
 				Regions
 			</MenuItem>
-
+			<MenuItem
+				onClick={toggleDrawer}
+				shortLayout
+				iconName="account"
+				to="/admin/slugs"
+			>
+				Slugs
+			</MenuItem>
 			<MobileSwitchOrgMenuItem/>
 			<MobileBoxOfficeMenuItem onClick={toggleDrawer}/>
 		</div>

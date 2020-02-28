@@ -3,7 +3,7 @@
 <suite name="Suite">
 	<test verbose="1" name="Test">
 		<classes>
-			<class name="test.LoginWithFacebookStepsIT" />
+			<!-- <class name="test.LoginWithFacebookStepsIT" /> -->
 			<class name="test.LoginStepsIT" />
 			<class name="test.SignUpStepsIT" />
 			<class name="test.ForgotPasswordStepsIT" />
@@ -26,6 +26,10 @@
 			<class name="test.RefundPartialCheckOrderFeeRefundDisabledStepsIT" />
 			<class name="test.reports.ReportBoxOfficeStepsIT" />
 			<class name="test.announcement.EmailTicketToBuyersUsingAnnouncement"/>
+			<class name="test.refund.override.RefundOverrideJustPerEventFeePerOrderStepsIT"/>
+			<class name="test.refund.override.RefundOverrideEntireOrderWithOrderFees"/>
+			<class name="test.refund.override.RefundOverrideEntireOrderWithOutFees"/>
+			<class name="test.pastdates.MoveEventDatesToPastStepsIT" />
 		</classes>
 	</test>
 </suite>

@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { observer } from "mobx-react";
-import { withStyles, Grid, Collapse, Typography } from "@material-ui/core";
+import {
+	withStyles,
+	Grid,
+	Collapse,
+	Typography,
+	FormHelperText
+} from "@material-ui/core";
 import moment from "moment-timezone";
 import Bn from "bn-api-node";
 
@@ -14,17 +20,7 @@ import Bigneon from "../../../../../helpers/bigneon";
 import eventUpdateStore from "../../../../../stores/eventUpdate";
 import RichTextInputField from "../../../../elements/form/rich-editor/RichTextInputField";
 import FormatInputLabel from "../../../../elements/form/FormatInputLabel";
-
-const styles = theme => ({
-	selectedAgeLimitContainer: {
-		flex: 1,
-		display: "flex",
-		alignItems: "center"
-	},
-	ageLimitContainer: {
-		paddingTop: "14px"
-	}
-});
+import user from "../../../../../stores/user";
 
 export const DEFAULT_END_TIME_HOURS_AFTER_SHOW_TIME = 24; //For lack of a better var name
 
@@ -300,7 +296,8 @@ class Details extends Component {
 		this.state = {
 			venues: null,
 			selectedAgeLimitOption: null,
-			ageLimits: {}
+			ageLimits: {},
+			dateError: {}
 		};
 
 		this.changeDetails = this.changeDetails.bind(this);
@@ -533,7 +530,9 @@ class Details extends Component {
 	}
 
 	render() {
-		const { errors = {}, validateFields } = this.props;
+		const { errors, validateFields, hasSubmitted } = this.props;
+		const { dateError } = this.state;
+		const { disablePastDate } = eventUpdateStore;
 
 		const {
 			name,
@@ -631,6 +630,11 @@ class Details extends Component {
 							name="eventDate"
 							label="Event date *"
 							onChange={newEventDate => {
+								//Check if date selected is before current date/time
+								moment.utc(newEventDate).isBefore(moment.utc())
+									? (dateError.eventDate = true)
+									: (dateError.eventDate = false);
+
 								newEventDate.set({
 									hour: eventDate.get("hour"),
 									minute: eventDate.get("minute"),
@@ -650,6 +654,14 @@ class Details extends Component {
 							}}
 							onBlur={validateFields}
 						/>
+						<FormHelperText
+							error={dateError.eventDate}
+							id={`eventDate-error-text`}
+						>
+							{dateError.eventDate && disablePastDate
+								? "Event with sales cannot move to past date."
+								: ""}
+						</FormHelperText>
 					</Grid>
 
 					<Grid item xs={12} sm={12} md={3} lg={3}>
@@ -698,6 +710,11 @@ class Details extends Component {
 
 								let adjustTime;
 
+								//Check if date selected is before current date/time
+								moment.utc(updatedEndTime).isBefore(moment.utc())
+									? (dateError.endTime = true)
+									: (dateError.endTime = false);
+
 								//Adjust time part of newly selected date
 								if (endTime) {
 									adjustTime = endTime;
@@ -720,6 +737,11 @@ class Details extends Component {
 							}}
 							onBlur={validateFields}
 						/>
+						<FormHelperText error={dateError.endTime} id={`endTime-error-text`}>
+							{dateError.endTime && !hasSubmitted && disablePastDate
+								? "Event with sales cannot move to past date."
+								: ""}
+						</FormHelperText>
 					</Grid>
 					<Grid item xs={12} sm={12} md={3} lg={3}>
 						<DateTimePickerGroup
@@ -894,13 +916,26 @@ class Details extends Component {
 }
 
 Details.defaultProps = {
-	errors: {}
+	errors: {},
+	hasSubmitted: false
 };
 
 Details.propTypes = {
 	errors: PropTypes.object.isRequired,
-	validateFields: PropTypes.func.isRequired
+	validateFields: PropTypes.func.isRequired,
+	hasSubmitted: PropTypes.bool.isRequired
 };
+
+const styles = theme => ({
+	selectedAgeLimitContainer: {
+		flex: 1,
+		display: "flex",
+		alignItems: "center"
+	},
+	ageLimitContainer: {
+		paddingTop: "14px"
+	}
+});
 
 export const EventDetails = withStyles(styles)(Details);
 export const validateEventFields = validateFields;

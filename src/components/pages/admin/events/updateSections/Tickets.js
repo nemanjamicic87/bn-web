@@ -260,7 +260,7 @@ const formatForInput = (ticket_types, event) => {
 		if (
 			saleStartTimeOption !== "parent" &&
 			(!ticketStartDate ||
-				(ticketStartDate && ticketStartDate.isBefore(moment.utc().local())))
+				(ticketStartDate && ticketStartDate.isBefore(moment.utc("1 Jan 1950"))))
 		) {
 			saleStartTimeOption = "immediately";
 		}

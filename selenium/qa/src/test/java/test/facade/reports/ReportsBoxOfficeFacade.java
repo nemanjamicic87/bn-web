@@ -63,7 +63,6 @@ public class ReportsBoxOfficeFacade extends BaseFacadeSteps {
 		ReportsBoxOfficePageData dataHolder = ((ReportsBoxOfficePageData) holder);
 		Map<String, OperatorTableRowData> rowData = dataHolder.getRows();
 		for (Purchase purchase : boxOfficePurchases) {
-			String eventName = purchase.getEvent().getEventName();
 			OperatorTableRowData data = rowData.get(purchase.getEvent().getEventName());
 			if (data == null) {
 				return false;
@@ -72,7 +71,7 @@ public class ReportsBoxOfficeFacade extends BaseFacadeSteps {
 		return true;
 	}
 
-	public boolean thenThereShouldBeMultipeTablesWithCorrectOrder(DataHolder dataHolder) {
+	public void thenThereShouldBeMultipeTablesWithCorrectOrder(DataHolder dataHolder) {
 		List<OperatorTableData> tableDates = ((ReportsBoxOfficePageData)dataHolder).getTables();
 		SoftAssert sa = new SoftAssert();
 		if(tableDates.size() > 1) {
@@ -80,11 +79,10 @@ public class ReportsBoxOfficeFacade extends BaseFacadeSteps {
 			sa.assertTrue(isOrderdByOperatorName, "Operator tables not ordered by operator name");
 			boolean isDataInTablesOrdered = isDataInTablesOrdered(tableDates);
 			sa.assertTrue(isDataInTablesOrdered, "Rows in table(s) not orderd by date and event name");
-			sa.assertAll();
-			return isOrderdByOperatorName && isDataInTablesOrdered;
 		} else {
-			return false;
+			sa.fail("Number of tables is not greater than one");
 		}
+		sa.assertAll();
 	}
 	
 	public boolean isZoneInRowsEqual(ZoneId ordZoneId) {

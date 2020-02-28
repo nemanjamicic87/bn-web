@@ -21,6 +21,8 @@ public class MsgConstants {
 	public static final String EVENT_PUBLISHED = "Event published";
 	public static final String EVENT_SAVED_TO_DRAFT = "Draft saved";
 	public static final String EVENT_DELETION_FAILED = "Event is ineligible for deletion";
+	public static final String INVALID_EVENT_DETAILS = "There are invalid event details.";
+	public static final String EVENT_WITH_SALES_CANT_MOVE_TO_PAST_DATE = "Event with sales cannot move to past date. Event with sales cannot move to past date.";
 	
 	public static final String MORE_THAN_ONE_EVENT_PURCHASE_ERROR = "Cart limited to one event for purchasing";
 	

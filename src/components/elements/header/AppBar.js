@@ -20,6 +20,7 @@ import BoxOfficeLink from "./BoxOfficeLink";
 import AppBarLogo from "./AppBarLogo";
 import layout from "../../../stores/layout";
 import servedImage from "../../../helpers/imagePathHelper";
+import { isReactNative } from "../../../helpers/reactNative";
 
 const styles = theme => {
 	return {
@@ -67,7 +68,8 @@ class CustomAppBar extends Component {
 		super(props);
 
 		this.state = {
-			showSearch: false
+			showSearch: isReactNative(),
+			isReactNative: isReactNative()
 		};
 		this.showMobileSearch = this.showMobileSearch.bind(this);
 	}
@@ -77,75 +79,92 @@ class CustomAppBar extends Component {
 	}
 
 	closeSearch() {
+		const { isReactNative } = this.state;
+		if (isReactNative) {
+			return;
+		}
 		this.setState({ showSearch: false });
 	}
 
 	render() {
 		const { classes, handleDrawerToggle, history, homeLink } = this.props;
+		const { isReactNative } = this.state;
 
 		return (
 			<AppBar position={"static"}>
-				<Toolbar className={classes.toolBar}>
-					{handleDrawerToggle ? (
-						<Hidden mdUp>
-							{layout.showSideMenu ? (
-								<IconButton
-									color="inherit"
-									aria-label="open drawer"
-									onClick={handleDrawerToggle}
-									className={classes.navIconHide}
-								>
-									<MenuIcon className={classes.menuIcon}/>
-								</IconButton>
-							) : (
-								<span/>
-							)}
-						</Hidden>
-					) : null}
+				{isReactNative ? (
+					<SearchToolBarInput
+						onCloseClick={this.closeSearch.bind(this)}
+						history={history}
+					/>
 
-					<div className={classes.headerLinkContainer}>
-						<Link to={homeLink}>
-							<AppBarLogo/>
-						</Link>
-					</div>
+				) : (
+					<React.Fragment>
+						<Toolbar className={classes.toolBar}>
+							{handleDrawerToggle ? (
+								<Hidden mdUp>
+									{layout.showSideMenu ? (
+										<IconButton
+											color="inherit"
+											aria-label="open drawer"
+											onClick={handleDrawerToggle}
+											className={classes.navIconHide}
+										>
+											<MenuIcon
+												className={classes.menuIcon}
+											/>
+										</IconButton>
+									) : (
+										<span/>
+									)}
+								</Hidden>
+							) : null}
 
-					{/*{!layout.showStudioLogo ? (*/}
-					{/*	<Hidden smDown>*/}
-					{/*		<SearchToolBarInput history={history}/>*/}
-					{/*	</Hidden>*/}
-					{/*) : null}*/}
+							<div className={classes.headerLinkContainer}>
+								<Link to={homeLink}>
+									<AppBarLogo/>
+								</Link>
+							</div>
 
-					{!layout.showStudioLogo ? (
-						<Hidden smUp>
-							<img
-								alt="Search icon"
-								className={classes.icon}
-								src={servedImage("/icons/search-gray.svg")}
-								onClick={this.showMobileSearch}
-							/>
-						</Hidden>
-					) : null}
+							{/*{!layout.showStudioLogo ? (*/}
+							{/*	<Hidden smDown>*/}
+							{/*		<SearchToolBarInput history={history}/>*/}
+							{/*	</Hidden>*/}
+							{/*) : null}*/}
 
-					<span className={classes.rightMenuOptions}>
-						<Hidden smDown>
-							<BoxOfficeLink/>
-							<CurrentOrganizationMenu/>
-							<CartHeaderLink/>
-						</Hidden>
-						<RightUserMenu history={history}/>
-					</span>
-				</Toolbar>
-				<Slide
-					direction="left"
-					in={!layout.showStudioLogo && this.state.showSearch}
-				>
-					<div className={classes.mobiSearchContainer}>
-						<SearchToolBarInput
-							onCloseClick={this.closeSearch.bind(this)}
-							history={history}
-						/>
-					</div>
-				</Slide>
+							{!layout.showStudioLogo ? (
+								<Hidden smUp>
+									<img
+										alt="Search icon"
+										className={classes.icon}
+										src={servedImage("/icons/search-gray.svg")}
+										onClick={this.showMobileSearch}
+									/>
+								</Hidden>
+							) : null}
+
+							<span className={classes.rightMenuOptions}>
+								<Hidden smDown>
+									<BoxOfficeLink/>
+									<CurrentOrganizationMenu/>
+									<CartHeaderLink/>
+								</Hidden>
+								<RightUserMenu history={history}/>
+							</span>
+						</Toolbar>
+						<Slide
+							direction="left"
+							in={!layout.showStudioLogo && this.state.showSearch}
+						>
+							<div className={classes.mobiSearchContainer}>
+								<SearchToolBarInput
+									onCloseClick={this.closeSearch.bind(this)}
+									history={history}
+								/>
+							</div>
+						</Slide>
+					</React.Fragment>
+				)}
 			</AppBar>
 		);
 	}

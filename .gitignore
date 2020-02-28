@@ -34,3 +34,4 @@ ui-tests/node_modules
 /selenium/**/bin/
 /selenium/**/test-output
 /selenium/**/qa.iml
+/selenium/qa/tmp/

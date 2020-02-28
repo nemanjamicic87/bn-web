@@ -52,11 +52,16 @@ const styles = theme => {
 		},
 		block: {
 			flex: 1
+		},
+		ticketSalesBreakdown: {
+			[theme.breakpoints.down("xs")]: {
+				minWidth: "400vw"
+			}
 		}
 	};
 };
 
-class TicketSalesCard extends Component {
+class TicketSalesBreakdownCard extends Component {
 	constructor(props) {
 		super(props);
 
@@ -143,25 +148,12 @@ class TicketSalesCard extends Component {
 				iconPath={"/icons/graph.png"}
 				footerContent={footerContent}
 			>
-				<div className={classes.root}>
-					<Hidden smDown>
-						<Typography className={classes.titleText}>{title}</Typography>
-					</Hidden>
-
-					<TicketSalesChart
-						cubeApiUrl={cubeApiUrl}
-						token={token}
-						timezone={venue.timezone}
-						startDate={publishDateMinusOneDayUTC}
-						endDate={event_end}
-					/>
-				</div>
 			</CollapseCard>
 		);
 	}
 }
 
-TicketSalesCard.propTypes = {
+TicketSalesBreakdownCard.propTypes = {
 	classes: PropTypes.object.isRequired,
 	token: PropTypes.string.isRequired,
 	publish_date: PropTypes.string.isRequired,
@@ -170,4 +162,4 @@ TicketSalesCard.propTypes = {
 	cubeApiUrl: PropTypes.string.isRequired
 };
 
-export default withStyles(styles)(TicketSalesCard);
+export default withStyles(styles)(TicketSalesBreakdownCard);

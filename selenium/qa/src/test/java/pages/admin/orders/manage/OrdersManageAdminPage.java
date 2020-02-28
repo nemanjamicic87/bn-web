@@ -48,6 +48,7 @@ public class OrdersManageAdminPage extends BasePage {
 		if (listContainer == null) {
 			listContainer = new OrderListContainer(driver);
 		}
+		waitForTime(1000);
 		return listContainer;
 	}
 

@@ -10,7 +10,6 @@ import {
 	secondaryHex
 } from "../../../../../../config/theme";
 import servedImage from "../../../../../../helpers/imagePathHelper.js";
-import Divider from "../../../../../common/Divider";
 
 const styles = theme => {
 	return {
@@ -62,6 +61,16 @@ const styles = theme => {
 		},
 		desktopContainer: {
 			display: "flex"
+		},
+		footerCard: {
+			borderRadius: 0,
+			borderBottomLeftRadius: 8,
+			borderBottomRightRadius: 8
+		},
+		chartCard: {
+			borderBottomLeftRadius: 0,
+			borderBottomRightRadius: 0,
+			borderBottom: 0
 		}
 	};
 };
@@ -88,37 +97,42 @@ class CollapseCard extends Component {
 		const { expanded } = this.state;
 
 		return (
-			<Card>
-				<div className={classes.root}>
-					<Hidden smDown>
-						<div className={classes.desktopContainer}>
-							<div className={classes.iconContainer}>
-								{iconPath ? (
-									<img className={classes.icon} src={servedImage(iconPath)}/>
-								) : null}
-							</div>
-							<div style={{ flex: 1 }}>{children}</div>
-							<div className={classes.iconContainer}/>
+			<div>
+				{!footerContent ? (
+					<Card className={classes.chartCard}>
+						<div className={classes.root}>
+							<Hidden smDown>
+								<div className={classes.desktopContainer}>
+									<div className={classes.iconContainer}>
+										{iconPath ? (
+											<img className={classes.icon} src={servedImage(iconPath)}/>
+										) : null}
+									</div>
+									<div style={{ flex: 1 }}>{children}</div>
+									<div className={classes.iconContainer}/>
+								</div>
+							</Hidden>
+							<Hidden mdUp>
+								<div className={classes.topRow} onClick={this.toggle}>
+									<Typography className={classes.titleText}>{title}</Typography>
+									<img
+										src={`/icons/${expanded ? "up" : "down"}-active.svg`}
+										className={classes.dropDownIcon}
+									/>
+								</div>
+								<Collapse in={expanded}>{children}</Collapse>
+							</Hidden>
 						</div>
-					</Hidden>
-					<Hidden mdUp>
-						<div className={classes.topRow} onClick={this.toggle}>
-							<Typography className={classes.titleText}>{title}</Typography>
-							<img
-								src={`/icons/${expanded ? "up" : "down"}-active.svg`}
-								className={classes.dropDownIcon}
-							/>
-						</div>
-						<Collapse in={expanded}>{children}</Collapse>
-					</Hidden>
-				</div>
-				{footerContent ? (
-					<React.Fragment>
-						<Divider/>
-						<div className={classes.footer}>{footerContent}</div>
-					</React.Fragment>
-				) : null}
-			</Card>
+					</Card>
+				) : <div/>}
+				<Card className={classes.footerCard}>
+					{footerContent ? (
+						<React.Fragment>
+							<div className={classes.footer}>{footerContent}</div>
+						</React.Fragment>
+					) : <div/>}
+				</Card>
+			</div>
 		);
 	}
 }
@@ -126,7 +140,7 @@ class CollapseCard extends Component {
 CollapseCard.propTypes = {
 	classes: PropTypes.object.isRequired,
 	title: PropTypes.string.isRequired,
-	children: PropTypes.any.isRequired,
+	children: PropTypes.any,
 	iconPath: PropTypes.string,
 	footerContent: PropTypes.any
 };

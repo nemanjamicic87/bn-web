@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Dialog, Typography, withStyles } from "@material-ui/core";
 import { observer } from "mobx-react";
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
 import Hidden from "@material-ui/core/Hidden";
 import Slide from "@material-ui/core/Slide";
 import CustomButton from "../../elements/Button";
@@ -16,7 +15,6 @@ import {
 	fontFamilyDemiBold,
 	secondaryHex
 } from "../../../config/theme";
-import AppButton from "../../elements/AppButton";
 import Meta from "./Meta";
 import Loader from "../../elements/loaders/Loader";
 import PrivateEventDialog from "./PrivateEventDialog";
@@ -35,6 +33,7 @@ import classNames from "classnames";
 import PurchaseDetails from "./PurchaseDetails";
 import Hero from "./SuccessHero";
 import removeCountryFromAddress from "../../../helpers/removeCountryFromAddress";
+import { loadDrift } from "../../../helpers/drift";
 
 const heroHeight = 586;
 
@@ -427,12 +426,31 @@ class CheckoutSuccess extends Component {
 			mobileDialogOpen: true,
 			mobileCardSlideIn: true,
 			order_id: null,
+			appId: null,
+			interactionId: null,
 			order: null,
 			phoneOS: getPhoneOS()
 		};
 	}
 
 	componentDidMount() {
+		this.setState(
+			{
+				appId: Settings().driftBotAppID,
+				interactionId: Settings().driftBotOrderConfirmationInteractionID
+			},
+			() => {
+				const { appId, interactionId } = this.state;
+				if (appId && interactionId) {
+					loadDrift(appId, () => {
+						window.driftt.api.startInteraction({
+							interactionId: Number(interactionId),
+							goToConversation: true
+						});
+					});
+				}
+			}
+		);
 		cart.emptyCart(); //TODO move this to after they've submitted the final form
 
 		if (
@@ -517,9 +535,9 @@ class CheckoutSuccess extends Component {
 			mobileCardSlideIn,
 			order,
 			order_id,
-			phoneOS
+			phoneOS,
+			appId
 		} = this.state;
-
 		if (event === null || order === null) {
 			return (
 				<div>
@@ -715,8 +733,10 @@ class CheckoutSuccess extends Component {
 					<Dialog
 						fullScreen
 						aria-labelledby="dialog-title"
-						onEntering={() => {}}
-						onExiting={() => {}}
+						onEntering={() => {
+						}}
+						onExiting={() => {
+						}}
 						open={mobileDialogOpen}
 					>
 						<div className={classes.mobileContent}>

@@ -51,7 +51,7 @@ class ReadMoreAdditionalInfo extends Component {
 	}
 
 	render() {
-		const { classes, children } = this.props;
+		const { classes, children, readMoreText, readLessText } = this.props;
 
 		if (!children) {
 			return null;
@@ -71,7 +71,7 @@ class ReadMoreAdditionalInfo extends Component {
 				className={classes.readMoreLink}
 				onClick={this.showHideMoreAdditionalInfo.bind(this)}
 			>
-				{showAllAdditionalInfo ? " Read less" : " Read more"}
+				{showAllAdditionalInfo ? readLessText : readMoreText}
 			</span>
 		);
 
@@ -94,11 +94,17 @@ class ReadMoreAdditionalInfo extends Component {
 	}
 }
 
-ReadMoreAdditionalInfo.defaultProps = { children: "" };
+ReadMoreAdditionalInfo.defaultProps = {
+	 children: "",
+	 readMoreText: "Read more",
+	 readLessText: "Read less"
+};
 
 ReadMoreAdditionalInfo.propTypes = {
 	classes: PropTypes.object.isRequired,
-	children: PropTypes.string.isRequired
+	children: PropTypes.string.isRequired,
+	readMoreText: PropTypes.string.isRequired,
+	readLessText: PropTypes.string.isRequired
 };
 
 export default withStyles(styles)(ReadMoreAdditionalInfo);

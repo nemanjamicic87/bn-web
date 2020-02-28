@@ -33,18 +33,18 @@ public class AccessabilityUtil {
 		String text = element.getText();
 		return text.trim();
 	}
-	
-	public List<String> getTextOfElements(List<WebElement> elements){
+
+	public List<String> getTextOfElements(List<WebElement> elements) {
 		if (elements == null) {
 			throw new IllegalArgumentException("List passed to getTextOfElements method is null");
 		}
 		List<String> retVal = new ArrayList<>(elements.size());
-		for(WebElement el : elements) {
+		for (WebElement el : elements) {
 			retVal.add(getTextOfElement(el));
 		}
 		return retVal;
 	}
-	
+
 	public String getTextOfElement(WebElement element) {
 		return element.getText().trim();
 	}
@@ -54,12 +54,14 @@ public class AccessabilityUtil {
 	}
 
 	public WebElement getChildElementFromParentLocatedBy(WebElement parent, By relativeChildBy, int seconds) {
+		new WebDriverWait(driver, seconds).until(ExpectedConditions.visibilityOf(parent));
 		WebElement element = new WebDriverWait(driver, seconds)
 				.until(ExpectedConditions.visibilityOf(parent.findElement(relativeChildBy)));
 		return element;
 	}
 
 	public List<WebElement> getChildElementsFromParentLocatedBy(WebElement parent, By relativeChildBy) {
+		new WebDriverWait(driver, 15).until(ExpectedConditions.visibilityOf(parent));
 		List<WebElement> elements = new WebDriverWait(driver, 15)
 				.until(ExpectedConditions.visibilityOfAllElements(parent.findElements(relativeChildBy)));
 		return elements;
@@ -98,7 +100,7 @@ public class AccessabilityUtil {
 		return getBigDecimalMoneyAmount(el);
 
 	}
-	
+
 	public BigDecimal getBigDecimalMoneyAmount(String xpath) {
 		WebElement element = driver.findElement(By.xpath(xpath));
 		return getBigDecimalMoneyAmount(element);
@@ -108,10 +110,10 @@ public class AccessabilityUtil {
 		return getBigDecimalMoneyAmount(element, "$", "");
 
 	}
-	
+
 	public BigDecimal getBigDecimalMoneyAmount(WebElement element, String oldChar, String newChar) {
 		String text = ProjectUtils.getTextForElementAndReplace(element, oldChar, newChar);
-		if(text == null || text.isEmpty()) {
+		if (text == null || text.isEmpty()) {
 			return null;
 		}
 		return new BigDecimal(text.trim());
@@ -124,13 +126,19 @@ public class AccessabilityUtil {
 		WebElement el = getChildElementFromParentLocatedBy(parent, By.xpath(relativeElPath));
 		return getDoubleAmount(el, "$", "");
 	}
-	
+
 	public String getText(WebElement parent, By by) {
 		if (!isChildElementVisibleFromParentLocatedBy(parent, by, 3)) {
 			return null;
 		}
 		WebElement el = getChildElementFromParentLocatedBy(parent, by);
 		return el.getText().trim();
+	}
+	
+	public String getValue(WebElement element) {
+		waitVisiblity(element);
+		String value = element.getAttribute("value");
+		return value;
 	}
 
 	public Double getDoubleAmount(WebElement element, String oldChar, String newChar) {
@@ -140,7 +148,7 @@ public class AccessabilityUtil {
 		}
 		return Double.parseDouble(text.trim());
 	}
-	
+
 	public BigDecimal getBigDecimalAmount(WebElement element, String oldChar, String newChar) {
 		String text = ProjectUtils.getTextForElementAndReplace(element, oldChar, newChar);
 		if (text.isEmpty()) {
@@ -191,9 +199,9 @@ public class AccessabilityUtil {
 		}
 		return retVal;
 	}
-	
+
 	public void clearInputFields(WebElement... inputFields) {
-		for(WebElement el : inputFields) {
+		for (WebElement el : inputFields) {
 			clearInputField(el);
 		}
 	}
@@ -204,5 +212,13 @@ public class AccessabilityUtil {
 		for (int i = 0; i < text.length() + 4; i++) {
 			inputField.sendKeys(Keys.BACK_SPACE);
 		}
+	}
+	
+	private void waitVisiblity(WebElement element) {
+		waitVisibility(element, 10);
+	}
+	
+	private void waitVisibility(WebElement element, int timeInSec) {
+		new WebDriverWait(driver, timeInSec).until(ExpectedConditions.visibilityOf(element));
 	}
 }

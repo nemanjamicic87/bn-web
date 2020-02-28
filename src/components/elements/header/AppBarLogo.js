@@ -25,7 +25,7 @@ const AppBarLogo = observer(({ classes }) => {
 			className={classes.headerImage}
 			src={
 				showStudioLogo
-					? servedImage("/images/bn-logo-text.svg")
+					? servedImage("/images/bn-logo-studio-text.png")
 					: servedImage("/images/bn-logo-text-web.svg")
 			}
 		/>

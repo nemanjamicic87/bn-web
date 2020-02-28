@@ -85,8 +85,7 @@ public class ReportBoxOfficeStepsIT extends BaseSteps {
 		fp.getReportsBoxOfficeFacade().enterDates(range);
 		
 		DataHolder dataHolder = fp.getReportsBoxOfficeFacade().getPageDataHolder();
-		boolean isDataOrdered = fp.getReportsBoxOfficeFacade().thenThereShouldBeMultipeTablesWithCorrectOrder(dataHolder);
-		Assert.assertTrue(isDataOrdered);
+		fp.getReportsBoxOfficeFacade().thenThereShouldBeMultipeTablesWithCorrectOrder(dataHolder);
 		fp.getLoginFacade().logOut();
 	}
 	

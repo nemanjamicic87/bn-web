@@ -21,7 +21,7 @@ import test.BaseSteps;
 import test.facade.FacadeProvider;
 import utils.DataConstants;
 
-public class EmailToTicketHoldersUsingAnnouncement extends BaseSteps {
+public class EmailTicketToBuyersUsingAnnouncement extends BaseSteps {
 
 	private static final String EVENT_NAME = "TestAnnoucementNameEvent";
 	private static final Integer EVENT_DATE_OFFEST = 50;

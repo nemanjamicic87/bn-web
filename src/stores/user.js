@@ -69,9 +69,15 @@ class User {
 	refreshUser(onSuccess = null, onError = null) {
 		const token = localStorage.getItem("access_token");
 		if (!token) {
-			onError ? onError("Missing access token") : null;
-			this.onLogout();
-			return;
+			const refresh = localStorage.getItem("refresh_token");
+			if (refresh) {
+				this.refreshToken(() => this.refreshUser(onSuccess, onError), onError);
+				return;
+			} else {
+				onError ? onError("Missing access token") : null;
+				this.onLogout();
+				return;
+			}
 		}
 
 		//Every time the user is loaded, refresh the token first. This is always called on the first load.

@@ -35,6 +35,8 @@ import EventDescriptionBody from "./EventDescriptionBody";
 import analytics from "../../../helpers/analytics";
 import getAllUrlParams from "../../../helpers/getAllUrlParams";
 import FormattedAdditionalInfo from "./FormattedAdditionalInfo";
+import getUrlParam from "../../../helpers/getUrlParam";
+import removeURLParam from "../../../helpers/removeURLParam";
 
 const styles = theme => ({
 	root: {
@@ -161,9 +163,33 @@ class CheckoutConfirmation extends Component {
 					variant: "error"
 				});
 			});
+			const order_id = getUrlParam("order_id");
+
+			this.checkForAbandonedCart(order_id);
 		} else {
 			//TODO return 404
 		}
+	}
+
+	checkForAbandonedCart(id) {
+		if (!id) {
+			return;
+		}
+
+		Bigneon()
+			.cart.duplicate({
+				id
+			})
+			.then(response => {
+				removeURLParam("order_id", window.location.search);
+			})
+			.catch(error => {
+				notifications.showFromErrorResponse({
+					defaultMessage: "Could not restore abandoned cart.",
+					error
+				});
+				console.error(error);
+			});
 	}
 
 	onFreeCheckout() {
@@ -181,14 +207,13 @@ class CheckoutConfirmation extends Component {
 				}
 			})
 			.then(response => {
-
 				const { data } = response;
 				const { history } = this.props;
 				const { id, event } = selectedEvent;
 				const { slug } = event;
 				analytics.purchaseCompleted(
 					event.id,
-					{ ...user.getCampaignTrackingData(),  ...getAllUrlParams() },
+					{ ...user.getCampaignTrackingData(), ...getAllUrlParams() },
 					"USD",
 					cartItems,
 					0
@@ -196,7 +221,7 @@ class CheckoutConfirmation extends Component {
 				cart.refreshCart();
 				orders.refreshOrders();
 				tickets.refreshTickets();
- 				user.clearCampaignTrackingData();
+				user.clearCampaignTrackingData();
 
 				if (id) {
 					//If they're checking out for a specific event then we have a custom success page for them
@@ -268,7 +293,7 @@ class CheckoutConfirmation extends Component {
 				const { slug } = event;
 				analytics.purchaseCompleted(
 					event.id,
-					{ ...user.getCampaignTrackingData(),  ...getAllUrlParams() },
+					{ ...user.getCampaignTrackingData(), ...getAllUrlParams() },
 					"USD",
 					cartItems,
 					total
@@ -418,11 +443,11 @@ class CheckoutConfirmation extends Component {
 			cryptoIcons = ["crypto/LTC.png"];
 		}
 
-		if (cartExpired) {
-			return (
-				<Redirect to={`/tickets/${id}/tickets${window.location.search}`}/>
-			);
-		}
+		// if (cartExpired) {
+		// 	return (
+		// 		<Redirect to={`/tickets/${id}/tickets${window.location.search}`}/>
+		// 	);
+		// }
 
 		const sharedContent = (
 			<div>

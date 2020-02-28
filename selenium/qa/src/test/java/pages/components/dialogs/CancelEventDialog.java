@@ -11,6 +11,8 @@ public class CancelEventDialog extends DialogContainerComponent{
 	
 	@FindBy(xpath = "//form//button[@type='submit' and span[contains(text(),'Cancel event')]]")
 	private WebElement cancelEventButton;
+	
+	private String CANCEL_EVENT_BTN_LABEL = "Cancel event";
 
 	@FindBy(xpath = "//form//button[@type='button' and span[contains(text(),'Keep event')]]")
 	private WebElement keepEventButton;
@@ -20,7 +22,8 @@ public class CancelEventDialog extends DialogContainerComponent{
 	}
 	
 	public void clickOnCancelEventButton() {
-		explicitWaitForVisibilityAndClickableWithClick(cancelEventButton);
+		isVisible();
+		clickOnButtonWithLabel(CANCEL_EVENT_BTN_LABEL);
 	}
 
 }

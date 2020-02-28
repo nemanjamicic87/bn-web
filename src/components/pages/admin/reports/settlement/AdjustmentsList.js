@@ -1,10 +1,13 @@
-import React from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Bn from "bn-api-node";
 import { Typography, withStyles } from "@material-ui/core";
-
+import Bigneon from "../../../../../helpers/bigneon";
 import { dollars } from "../../../../../helpers/money";
 import { fontFamilyDemiBold } from "../../../../../config/theme";
+import IconButton from "../../../../elements/IconButton";
+import DeleteDialog from "./DeleteDialog";
+import notifications from "../../../../../stores/notifications";
 
 const styles = theme => ({
 	root: {
@@ -23,51 +26,100 @@ const styles = theme => ({
 	},
 	boldText: {
 		fontFamily: fontFamilyDemiBold
+	},
+	icon: {
+		marginLeft: 30,
+		marginBottom: 5
 	}
 });
 
 const typeEnums = Bn.Enums.ADJUSTMENT_TYPES;
 
-const AdjustmentsList = props => {
-	const { classes, adjustments } = props;
+class AdjustmentsList extends Component {
+	constructor(props) {
+		super(props);
 
-	return (
-		<div className={classes.root}>
-			<Typography className={classes.title}>Manual adjustments:</Typography>
-			{adjustments.map(adjustment => {
-				const {
-					id,
-					amount_in_cents,
-					displayCreatedAt,
-					note,
-					settlement_adjustment_type
-				} = adjustment;
+		this.defaultState = {
+			showDeleteDialog: false,
+			id: ""
+		};
 
-				return (
-					<div key={id} className={classes.itemContainer}>
-						<Typography className={classes.text}>
-							<span className={classes.boldText}>
-								{typeEnums[settlement_adjustment_type]}
-							</span>{" "}
-							- {displayCreatedAt}
-						</Typography>
-						<Typography className={classes.text}>
-							Value: {dollars(amount_in_cents)}
-						</Typography>
+		this.state = this.defaultState;
 
-						<Typography className={classes.text}>
-							Note: {note || "-"}
-						</Typography>
-					</div>
-				);
-			})}
-		</div>
-	);
-};
+		this.onDeleteDialogClose = this.onDeleteDialogClose.bind(this);
+	}
+
+	onDeleteDialogClose() {
+		this.setState({
+			showDeleteDialog: null,
+			id: ""
+		});
+	}
+
+	onDeleteDialogOpen(id) {
+		this.setState({
+			showDeleteDialog: true,
+			id: id
+		});
+	}
+
+	render() {
+		const { showDeleteDialog, id } = this.state;
+		const { classes, adjustments, refreshAdjustments } = this.props;
+		return (
+			<div className={classes.root}>
+				{id ? (
+					<DeleteDialog
+						open={!!showDeleteDialog}
+						onClose={this.onDeleteDialogClose}
+						refreshAdjustments={refreshAdjustments}
+						id={id}
+					/>
+				) : null}
+				<Typography className={classes.title}>Manual adjustments:</Typography>
+				{adjustments.map(adjustment => {
+					const {
+						id,
+						amount_in_cents,
+						displayCreatedAt,
+						note,
+						settlement_adjustment_type
+					} = adjustment;
+
+					return (
+						<div key={id} className={classes.itemContainer}>
+							<Typography className={classes.text}>
+								<span className={classes.boldText}>
+									{typeEnums[settlement_adjustment_type]}
+								</span>{" "}
+								- {displayCreatedAt}
+								<IconButton
+									className={classes.icon}
+									onClick={this.onDeleteDialogOpen.bind(this, id)}
+									iconUrl="/icons/delete-gray.svg"
+								>
+									Delete
+								</IconButton>
+							</Typography>
+							<Typography className={classes.text}>
+								Value: {dollars(amount_in_cents)}
+							</Typography>
+
+							<Typography className={classes.text}>
+								Note: {note || "-"}
+							</Typography>
+						</div>
+					);
+				})}
+			</div>
+		);
+	}
+}
 
 AdjustmentsList.propTypes = {
 	classes: PropTypes.object.isRequired,
-	adjustments: PropTypes.array.isRequired
+	adjustments: PropTypes.array.isRequired,
+	refreshAdjustments: PropTypes.func
 };
 
 export default withStyles(styles)(AdjustmentsList);

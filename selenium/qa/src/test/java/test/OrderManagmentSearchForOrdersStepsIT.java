@@ -6,7 +6,6 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import model.CreditCard;
 import model.Event;
 import model.Purchase;
 import model.TicketType;

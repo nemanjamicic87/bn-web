@@ -82,9 +82,13 @@ public class OrderTicketsDetails extends BaseComponent {
 			return isExplicitlyWaitVisible(5, eventFeeContainer) && isExplicitlyWaitVisible(5, creditCardFeesContainer);
 		}
 
-		public void clickOnCheckBoxes() {
-			clickOnCheckBox(eventFeeContainer);
-			clickOnCheckBox(creditCardFeesContainer);
+		public void clickOnCheckBoxes(boolean checkEventFee, boolean checkCardFee) {
+			if (checkEventFee) {
+				clickOnCheckBox(eventFeeContainer);
+			}
+			if (checkCardFee) {
+				clickOnCheckBox(creditCardFeesContainer);
+			}
 		}
 
 		private void clickOnCheckBox(WebElement element) {
@@ -94,10 +98,18 @@ public class OrderTicketsDetails extends BaseComponent {
 		}
 
 		public boolean isEntirePerOrderFeeChecked() {
-			boolean isEventFeeChecked = isFeesChecked(eventFeeContainer);
-			boolean isCreditCardFeeChecked = isFeesChecked(creditCardFeesContainer);
+			boolean isEventFeeChecked = isEventFeeChecked();
+			boolean isCreditCardFeeChecked = isCreditCardFeeChecked();
 			return isEventFeeChecked && isCreditCardFeeChecked;
 
+		}
+		
+		public boolean isEventFeeChecked() {
+			return isFeesChecked(eventFeeContainer);
+		}
+		
+		public boolean isCreditCardFeeChecked() {
+			return isFeesChecked(creditCardFeesContainer);
 		}
 
 		private boolean isFeesChecked(WebElement container) {
@@ -105,9 +117,15 @@ public class OrderTicketsDetails extends BaseComponent {
 					By.xpath(relativeCheckedBoxXpath), 3);
 		}
 
-		public BigDecimal getMoneyAmount() {
-			BigDecimal eventFeeMoney = getMoneyAmountElement(eventFeeContainer);
-			BigDecimal creditCardMoney = getMoneyAmountElement(creditCardFeesContainer);
+		public BigDecimal getMoneyAmount(boolean checkEventFee, boolean checkCardFee) {
+			BigDecimal eventFeeMoney = null;
+			BigDecimal creditCardMoney = null;
+			if(checkEventFee) {
+				eventFeeMoney = getMoneyAmountElement(eventFeeContainer);
+			}
+			if (checkCardFee) {
+				creditCardMoney = getMoneyAmountElement(creditCardFeesContainer);
+			}
 			if (creditCardMoney != null && eventFeeMoney != null) {
 				return creditCardMoney.add(eventFeeMoney);
 			} else if (creditCardMoney == null) {

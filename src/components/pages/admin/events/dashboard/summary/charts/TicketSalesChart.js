@@ -8,6 +8,7 @@ import moment from "moment-timezone";
 import Loader from "../../../../../../elements/loaders/Loader";
 import TicketSalesTooltip from "./TicketSalesTooltip";
 import getScreenWidth from "../../../../../../../helpers/getScreenWidth";
+import { TIME_FORMAT_YYYY_MM_DD, TIME_FORMAT_DD_MMM } from "../../../../../../../helpers/time";
 
 const COLORS_SERIES = ["#707CED"];
 const FILL_SERIES = ["rgba(112,124,237,0.06)"];
@@ -20,7 +21,8 @@ class SalesLine extends Component {
 			showTooltip: false,
 			tooltipTop: 0,
 			tooltipLeft: 0,
-			tooltipDateString: ""
+			tooltipDateString: "",
+			xaxisUnits: "days"
 		};
 
 		this.chartRef = React.createRef();
@@ -57,18 +59,43 @@ class SalesLine extends Component {
 
 	render() {
 		const {
+			showTooltip,
+			tooltipDateString,
+			tooltipTop,
+			tooltipLeft
+		} = this.state;
+		let { xaxisUnits } = this.state;
+		const {
 			resultSet,
 			startDate,
 			endDate,
 			token,
 			cubeApiUrl,
-			timezone
+			timezone,
+			cutOffDateString
 		} = this.props;
 
 		let borderWidth = 2;
 		if (getScreenWidth() < 500) {
 			borderWidth = 1;
 		}
+
+		const chartEnd =  moment.utc(endDate).isAfter(moment()) ? moment().add(1, "days") :  endDate;
+
+		resultSet.categories().forEach( c => c.category = moment.utc(c.category).startOf("week").weekday(0));
+
+		// Adjust the x-axis to display by days or weeks
+		resultSet.series().forEach(function(s, index) {
+			if(s.series.length >= 0){
+				const firstDate = moment(s.series[0].category);
+				const lastDate = moment(s.series[s.series.length - 1].category).startOf("day");
+				const countDays = Math.abs(firstDate.diff(lastDate, "days"));
+
+				if(countDays > 30) {
+					xaxisUnits = "weeks";
+				}
+			}
+		});
 
 		const data = {
 			labels: resultSet.categories().map(c => c.category),
@@ -81,10 +108,10 @@ class SalesLine extends Component {
 				lineTension: 0,
 
 				pointHitRadius: 20,
-				//pointRadius: 4,
+				pointRadius: s.series.map(r => (r.value === 0) ? 0 : 3),
 				borderWidth,
-				pointHoverRadius: 5
-				// pointHoverBorderWidth: 2
+				pointHoverRadius: 5,
+				pointHoverBorderWidth: 2
 			}))
 		};
 		const options = {
@@ -140,15 +167,16 @@ class SalesLine extends Component {
 						},
 						ticks: {
 							min: startDate,
-							max: endDate,
+							max: chartEnd,
 							lineHeight: "14px",
 							fontColor: "#2C3136",
-							fontSize: "12px"
-
-							// callback: (label, index, labels) => {
-							// 	const { value } = labels[0];
-							// 	return moment(value).format("MMM YYYY");
-							// }
+							fontSize: "12px",
+							callback: (label, index, labels) => {
+								return moment(label, TIME_FORMAT_YYYY_MM_DD).format(TIME_FORMAT_DD_MMM);
+							}
+						},
+						time: {
+							unit: xaxisUnits
 						}
 					}
 				],
@@ -171,15 +199,12 @@ class SalesLine extends Component {
 						}
 					}
 				]
-			}
+			},
+			animation: {
+				duration: 0
+			},
+			responsive: "true"
 		};
-
-		const {
-			showTooltip,
-			tooltipDateString,
-			tooltipTop,
-			tooltipLeft
-		} = this.state;
 
 		return (
 			<div onMouseLeave={this.hideTooltip.bind(this)}>
@@ -192,6 +217,8 @@ class SalesLine extends Component {
 						top={tooltipTop}
 						left={tooltipLeft}
 						timezone={timezone}
+						closeToolTip={this.hideTooltip.bind(this)}
+						cutOffDateString={cutOffDateString}
 					/>
 				) : null}
 			</div>
@@ -215,7 +242,7 @@ class TicketSalesChart extends Component {
 
 	render() {
 		const { cubeJsApi } = this.state;
-		const { startDate, endDate, timezone, token, cubeApiUrl } = this.props;
+		const { startDate, endDate, timezone, token, cubeApiUrl, cutOffDateString } = this.props;
 
 		return (
 			<QueryRenderer
@@ -245,6 +272,7 @@ class TicketSalesChart extends Component {
 						token={token}
 						cubeApiUrl={cubeApiUrl}
 						timezone={timezone}
+						cutOffDateString={cutOffDateString}
 					/>
 				))}
 			/>
@@ -257,7 +285,8 @@ TicketSalesChart.propTypes = {
 	startDate: PropTypes.string.isRequired,
 	endDate: PropTypes.string.isRequired,
 	cubeApiUrl: PropTypes.string.isRequired,
-	timezone: PropTypes.string.isRequired
+	timezone: PropTypes.string.isRequired,
+	cutOffDateString: PropTypes.string
 };
 
 export default TicketSalesChart;

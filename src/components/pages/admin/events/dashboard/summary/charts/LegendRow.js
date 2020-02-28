@@ -47,18 +47,20 @@ const LegendRow = props => {
 	const { classes, color, label, valueLabel, subValueLabel } = props;
 
 	return (
-		<div className={classes.root}>
-			<div className={classes.labelContainer}>
-				<div className={classes.dot} style={{ backgroundColor: color }}/>
-				<Typography className={classes.label}>{label}</Typography>
+		(valueLabel !== 0) ? (
+			<div className={classes.root}>
+				<div className={classes.labelContainer}>
+					<div className={classes.dot} style={{ backgroundColor: color }}/>
+					<Typography className={classes.label}>{label}</Typography>
+				</div>
+				<Typography className={classes.valueLabel}>
+					{valueLabel}&nbsp;
+					<span className={classes.subValueLabel}>
+						{subValueLabel ? `(${subValueLabel})` : ""}
+					</span>
+				</Typography>
 			</div>
-			<Typography className={classes.valueLabel}>
-				{valueLabel}&nbsp;
-				<span className={classes.subValueLabel}>
-					{subValueLabel ? `(${subValueLabel})` : ""}
-				</span>
-			</Typography>
-		</div>
+		) : null
 	);
 };
 

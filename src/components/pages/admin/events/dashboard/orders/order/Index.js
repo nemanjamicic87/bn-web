@@ -17,6 +17,7 @@ import CreateNote from "./CreateNote";
 import { fontFamilyDemiBold } from "../../../../../../../config/theme";
 import RelatedOrders from "./RelatedOrders";
 import OrderHistory from "./OrderHistory";
+import { TIME_FORMAT_FULL_DESCRIPTION } from "../../../../../../../helpers/time";
 
 const styles = theme => ({
 	root: {
@@ -59,21 +60,6 @@ class SingleOrder extends Component {
 	}
 
 	componentDidMount() {
-		const { eventId } = this.state;
-
-		Bigneon()
-			.events.read({ id: eventId })
-			.then(response => {
-				const { name, publish_date, venue } = response.data;
-				this.setState({
-					eventName: name,
-					salesStartStringUtc: publish_date,
-					venueTimeZone: venue.timezone
-				});
-			})
-			.catch(error => {
-				console.error(error);
-			});
 		this.loadAll();
 	}
 
@@ -112,14 +98,17 @@ class SingleOrder extends Component {
 				.then(response => {
 					const { data } = response;
 
-					const { event_start, venue } = data;
+					const { event_start, name, publish_date, venue } = data;
 
 					const displayDate = moment
 						.utc(event_start)
 						.tz(venue.timezone)
-						.format("llll");
+						.format(TIME_FORMAT_FULL_DESCRIPTION);
 
 					this.setState({
+						eventName: name,
+						salesStartStringUtc: publish_date,
+						venueTimeZone: venue.timezone,
 						eventDetails: { ...data, displayDate }
 					});
 					user.setCurrentOrganizationRolesAndScopes(data.organization_id);
@@ -140,13 +129,14 @@ class SingleOrder extends Component {
 
 	loadOrder() {
 		const { orderId, eventId } = this.state;
+		const { timezone } = this.props;
 
 		return new Promise((resolve, reject) => {
 			Bigneon()
 				.orders.read({ id: orderId })
 				.then(response => {
 					const { data } = response;
-					const { date, is_box_office, items, user_id } = data;
+					const { is_box_office, items } = data;
 
 					//Orders can only be linked to a single event currently. This would need to change if we allow multiple events on a single order.
 					const orderEventId = [...new Set(items.map(i => i.event_id))].pop();
@@ -155,14 +145,6 @@ class SingleOrder extends Component {
 						this.props.match.params.eventId = orderEventId;
 						this.setState({ eventId: orderEventId });
 					}
-
-					const { venueTimeZone } = this.state;
-
-					const displayDate = date ? moment(date)
-						.utc(date)
-						.tz(venueTimeZone)
-						.format("YYYY/DD/MM HH:mm A z") : null;
-
 					const platform = is_box_office ? "Box office" : data.platform || "";
 
 					let fees_in_cents = 0;
@@ -178,7 +160,7 @@ class SingleOrder extends Component {
 					});
 
 					this.setState({
-						order: { ...data, displayDate, platform, fees_in_cents }
+						order: { ...data, platform, fees_in_cents }
 					});
 					resolve();
 				})
@@ -237,7 +219,7 @@ class SingleOrder extends Component {
 					const { occurred_at, paid_at } = item;
 					const date = paid_at ? paid_at : occurred_at;
 					const occurredAt = date
-						? moment(date)
+						? moment
 							.utc(date)
 						    .tz(venueTimeZone)
 							.format("llll")
@@ -272,13 +254,14 @@ class SingleOrder extends Component {
 			eventDetails,
 			orderHistory,
 			showMobileTicketsView,
-			eventId
+			eventId,
+			venueTimeZone
 		} = this.state;
 		const { classes, timezone, organizationId } = this.props;
 
 		const isReady = order && eventDetails && orderItems;
 
-		const header = isReady ? <Header {...order}/> : null;
+		const header = isReady ? <Header {...order} timezone={venueTimeZone}/> : null;
 
 		const orderDetails = isReady ? (
 			<OrderItems
@@ -288,6 +271,7 @@ class SingleOrder extends Component {
 				refreshOrder={this.refreshOrder}
 				toggleMobileTicketsView={this.toggleMobileTicketsView.bind(this)}
 				showMobileTicketsView={showMobileTicketsView}
+				timezone={venueTimeZone || timezone}
 			/>
 		) : null;
 

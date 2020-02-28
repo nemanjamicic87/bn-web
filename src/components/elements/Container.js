@@ -19,6 +19,7 @@ import CartMobileBottomBar from "../common/cart/CartMobileBottomBar";
 import RequiresAuthDialog from "../pages/authentication/RequiresAuthDialog";
 import { toolBarHeight } from "../../config/theme";
 import layout from "../../stores/layout";
+import { isReactNative } from "../../helpers/reactNative";
 import BoxOfficeAppBar from "./header/BoxOfficeAppBar";
 import Footer from "./footers/FooterOne";
 import CaptureMissingEmail from "../pages/authentication/social/FacebookButton";
@@ -85,7 +86,8 @@ class Container extends React.Component {
 		super(props);
 
 		this.state = {
-			mobileOpen: false
+			mobileOpen: false,
+			isReactNative: isReactNative()
 			//isWidget: false
 		};
 	}
@@ -108,7 +110,7 @@ class Container extends React.Component {
 			isBoxOffice
 		} = layout;
 		const { classes, history, children } = this.props;
-		const { mobileOpen } = this.state;
+		const { mobileOpen, isReactNative } = this.state;
 
 		//Don't render container things if we're in a widget
 		if (!useContainer) {
@@ -146,7 +148,7 @@ class Container extends React.Component {
 						history={history}
 						homeLink={homeLink}
 					/>
-				) : isLanding ? (
+				) : isLanding && !isReactNative ? (
 					<Hidden smUp>
 						<AppBar
 							handleDrawerToggle={this.handleDrawerToggle.bind(this)}
@@ -240,16 +242,19 @@ class Container extends React.Component {
 							onSuccess={() => user.refreshUser()}
 						/>
 						<Notification/>
+						{isReactNative ? null : (
+							<React.Fragment>
+								{layout.showFooter ? (
+									<LandingFooter/>
+								) : (
+									<div className={classes.footerPlaceholder}/>
+								)}
 
-						{layout.showFooter ? (
-							<LandingFooter/>
-						) : (
-							<div className={classes.footerPlaceholder}/>
+								{layout.belowFooterPadding ? (
+									<div className={classes.belowFooterPadding}/>
+								) : null}
+							</React.Fragment>
 						)}
-
-						{layout.belowFooterPadding ? (
-							<div className={classes.belowFooterPadding}/>
-						) : null}
 					</main>
 				</div>
 				<CartMobileBottomBar/>

@@ -9,16 +9,12 @@ import java.util.stream.Collectors;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindAll;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import pages.BaseComponent;
 import pages.BasePage;
 import pages.components.admin.fans.manage.FanProfileEventSummaryComponent;
 import utils.Constants;
-import utils.ProjectUtils;
-import utils.SeleniumUtils;
 
 public class AdminFanProfilePage extends BasePage {
 
@@ -51,6 +47,7 @@ public class AdminFanProfilePage extends BasePage {
 	}
 	
 	public void navigate() {
+		super.navigate();
 		driver.get(getUrl());
 	}
 

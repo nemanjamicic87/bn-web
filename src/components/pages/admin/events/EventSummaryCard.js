@@ -16,90 +16,6 @@ import DateFlag from "../../../elements/event/DateFlag";
 import servedImage from "../../../../helpers/imagePathHelper";
 import optimizedImageUrl from "../../../../helpers/optimizedImageUrl";
 
-const styles = theme => {
-	return {
-		media: {
-			minHeight: 250,
-			height: "100%",
-			width: "100%",
-			backgroundImage: "linear-gradient(255deg, #e53d96, #5491cc)",
-			backgroundRepeat: "no-repeat",
-			backgroundSize: "cover",
-			backgroundPosition: "center",
-			paddingLeft: theme.spacing.unit * 2
-		},
-		eventDetailsContainer: {
-			paddingLeft: theme.spacing.unit * 2,
-			display: "flex",
-			flexDirection: "column",
-			justifyContent: "space-between"
-		},
-		topRow: {
-			display: "flex",
-			justifyContent: "space-between",
-			paddingRight: theme.spacing.unit
-		},
-		eventName: {
-			paddingTop: theme.spacing.unit * 2,
-			textTransform: "capitalize",
-			fontFamily: fontFamilyDemiBold,
-			fontSize: theme.typography.fontSize * 1.6
-		},
-		venueName: {
-			textTransform: "uppercase",
-			fontFamily: fontFamilyDemiBold
-		},
-		eventDate: {
-			color: "#9DA3B4"
-		},
-		totalsContainer: {
-			display: "flex",
-			justifyContent: "flex-start"
-		},
-		totalsDivider: {
-			borderLeft: "1px solid",
-			borderColor: "#9da3b4",
-			opacity: 0.5,
-			marginRight: theme.spacing.unit * 2,
-			marginLeft: theme.spacing.unit * 2
-		},
-		totalHeading: {
-			fontSize: theme.typography.fontSize * 0.9
-		},
-		totalValue: {
-			fontSize: theme.typography.fontSize
-		},
-		statusContainer: {
-			display: "flex"
-		},
-		bottomPadding: {
-			paddingBottom: theme.spacing.unit * 2
-		},
-		progressBarContainer: {
-			display: "flex",
-			paddingRight: theme.spacing.unit * 2
-		},
-		expandIconRow: {
-			display: "flex",
-			justifyContent: "center",
-			cursor: "pointer",
-			paddingBottom: theme.spacing.unit * 2,
-			paddingTop: theme.spacing.unit * 2
-		},
-		expandIconRowPlaceholder: {
-			display: "flex",
-			justifyContent: "center",
-			paddingBottom: theme.spacing.unit * 2,
-			paddingTop: theme.spacing.unit * 2
-		},
-		expandedViewContent: {
-			paddingTop: theme.spacing.unit * 2,
-			paddingRight: theme.spacing.unit * 3,
-			paddingLeft: theme.spacing.unit * 3
-		}
-	};
-};
-
 const Total = ({ children, color, value, classes }) => (
 	<div>
 		<Typography className={classes.totalHeading} style={{ color }}>
@@ -130,7 +46,9 @@ const EventSummaryCard = props => {
 		onExpandClick,
 		ticketTypes,
 		cancelled,
-		eventEnded
+		eventEnded,
+		publishDate,
+		status
 	} = props;
 
 	const mediaStyle = imageUrl
@@ -138,6 +56,7 @@ const EventSummaryCard = props => {
 		: {};
 
 	const displayEventStartDate = eventDate.format("dddd, MMMM Do YYYY h:mm A");
+	const publishedDateAfterNowAndNotDraft = moment.utc(publishDate).isAfter(moment.utc()) && status !== "Draft";
 
 	let tags = null;
 	if (cancelled) {
@@ -157,9 +76,13 @@ const EventSummaryCard = props => {
 			<div className={classes.statusContainer}>
 				<ColorTag
 					style={{ marginRight: 10 }}
-					variant={isPublished ? "secondary" : "disabled"}
+					variant={isPublished || publishedDateAfterNowAndNotDraft ? "secondary" : "disabled"}
 				>
-					{isPublished ? "Published" : "Draft"}
+					{isPublished
+						? "Published"
+						: publishedDateAfterNowAndNotDraft
+							? "Scheduled"
+							: "Draft"}
 				</ColorTag>
 				{onSaleTag}
 			</div>
@@ -288,68 +211,96 @@ const EventSummaryCard = props => {
 								/>
 							</div>
 						) : null}
-						{isExternal ? (
-							<div className={classes.expandIconRowPlaceholder}>&nbsp;</div>
-						) : !isExpanded ? (
-							<div
-								className={classes.expandIconRow}
-								onClick={() => onExpandClick(id)}
-							>
-								<img src={servedImage("/icons/down-active.svg")}/>
-							</div>
-						) : (
-							<div className={classes.expandIconRowPlaceholder}>&nbsp;</div>
-						)}
+						<div className={classes.expandIconRowPlaceholder}>&nbsp;</div>
 					</div>
-				</Grid>
-
-				<Grid item xs={12} sm={12} lg={12}>
-					<Collapse in={isExpanded}>
-						<div className={classes.expandedViewContent}>
-							<Grid container spacing={32}>
-								{ticketTypes
-									.filter(
-										ticketType =>
-											ticketType.sales_total_in_cents !== null &&
-											ticketType.sold_held !== null &&
-											ticketType.sold_unreserved !== null
-									)
-									.map((ticketType, index) => {
-										const remainingHeld =
-											ticketType.held - ticketType.sold_held;
-										// const valueDisplay = ticketType.held > 0 ? `${remainingHeld} / ${ticketType.held}` : "";
-										return (
-											<Grid key={index} item xs={12} sm={12} md={6} lg={4}>
-												<TicketTypeSalesBarChart
-													name={ticketType.name}
-													totalRevenueInCents={ticketType.sales_total_in_cents}
-													values={[
-														{
-															label: "Sold",
-															value:
-																ticketType.sold_held +
-																ticketType.sold_unreserved
-														},
-														{ label: "Open", value: ticketType.open },
-														{ label: "Held", value: remainingHeld }
-													]}
-												/>
-											</Grid>
-										);
-									})}
-							</Grid>
-							<div
-								className={classes.expandIconRow}
-								onClick={() => onExpandClick(null)}
-							>
-								<img src={servedImage("/icons/up-active.svg")}/>
-							</div>
-						</div>
-					</Collapse>
 				</Grid>
 			</Grid>
 		</Card>
 	);
+};
+
+const styles = theme => {
+	return {
+		media: {
+			minHeight: 250,
+			height: "100%",
+			width: "100%",
+			backgroundImage: "linear-gradient(255deg, #e53d96, #5491cc)",
+			backgroundRepeat: "no-repeat",
+			backgroundSize: "cover",
+			backgroundPosition: "center",
+			paddingLeft: theme.spacing.unit * 2
+		},
+		eventDetailsContainer: {
+			paddingLeft: theme.spacing.unit * 2,
+			display: "flex",
+			flexDirection: "column",
+			justifyContent: "space-between"
+		},
+		topRow: {
+			display: "flex",
+			justifyContent: "space-between",
+			paddingRight: theme.spacing.unit
+		},
+		eventName: {
+			paddingTop: theme.spacing.unit * 2,
+			textTransform: "capitalize",
+			fontFamily: fontFamilyDemiBold,
+			fontSize: theme.typography.fontSize * 1.6
+		},
+		venueName: {
+			textTransform: "uppercase",
+			fontFamily: fontFamilyDemiBold
+		},
+		eventDate: {
+			color: "#9DA3B4"
+		},
+		totalsContainer: {
+			display: "flex",
+			justifyContent: "flex-start"
+		},
+		totalsDivider: {
+			borderLeft: "1px solid",
+			borderColor: "#9da3b4",
+			opacity: 0.5,
+			marginRight: theme.spacing.unit * 2,
+			marginLeft: theme.spacing.unit * 2
+		},
+		totalHeading: {
+			fontSize: theme.typography.fontSize * 0.9
+		},
+		totalValue: {
+			fontSize: theme.typography.fontSize
+		},
+		statusContainer: {
+			display: "flex"
+		},
+		bottomPadding: {
+			paddingBottom: theme.spacing.unit * 2
+		},
+		progressBarContainer: {
+			display: "flex",
+			paddingRight: theme.spacing.unit * 2
+		},
+		expandIconRow: {
+			display: "flex",
+			justifyContent: "center",
+			cursor: "pointer",
+			paddingBottom: theme.spacing.unit * 2,
+			paddingTop: theme.spacing.unit * 2
+		},
+		expandIconRowPlaceholder: {
+			display: "flex",
+			justifyContent: "center",
+			paddingBottom: theme.spacing.unit * 2,
+			paddingTop: theme.spacing.unit * 2
+		},
+		expandedViewContent: {
+			paddingTop: theme.spacing.unit * 2,
+			paddingRight: theme.spacing.unit * 3,
+			paddingLeft: theme.spacing.unit * 3
+		}
+	};
 };
 
 EventSummaryCard.propTypes = {
@@ -371,7 +322,8 @@ EventSummaryCard.propTypes = {
 	onExpandClick: PropTypes.func.isRequired,
 	ticketTypes: PropTypes.array.isRequired,
 	cancelled: PropTypes.bool,
-	eventEnded: PropTypes.bool
+	eventEnded: PropTypes.bool,
+	publishDate: PropTypes.string
 };
 
 export default withStyles(styles)(EventSummaryCard);

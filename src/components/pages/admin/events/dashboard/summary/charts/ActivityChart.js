@@ -3,7 +3,7 @@ import cubejs from "@cubejs-client/core";
 import { QueryRenderer } from "@cubejs-client/react";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
-import { Typography } from "@material-ui/core";
+import { Hidden, Typography } from "@material-ui/core";
 import DoughnutChart from "./DoughnutChart";
 import {
 	fontFamilyDemiBold,
@@ -66,7 +66,6 @@ const appendMissingDatasets = (resultSet, legendKeyMap) => {
 
 	const { loadResponse } = resultSet;
 	const { data, query } = loadResponse;
-
 	data.forEach(entry => {
 		const elements = Object.keys(entry);
 
@@ -76,7 +75,7 @@ const appendMissingDatasets = (resultSet, legendKeyMap) => {
 
 		const key = entry[elements[0]];
 
-		if (key == "No data") {
+		if (key === "No data") {
 			return;
 		}
 
@@ -89,7 +88,7 @@ const appendMissingDatasets = (resultSet, legendKeyMap) => {
 	//Append entries from legendKeyMap
 	Object.keys(legendKeyMap).forEach(key => {
 		const label = legendKeyMap[key];
-		if (label == null) {
+		if (label == null || data.find(x => x[query.dimensions[0]] === label)) {
 			//Don't append ones we've used just above
 			return;
 		}
@@ -183,7 +182,8 @@ class ActivityChart extends Component {
 			measures,
 			dimensions,
 			segments,
-			classes
+			classes,
+			renewQuery
 		} = this.props;
 
 		const query = {
@@ -191,7 +191,8 @@ class ActivityChart extends Component {
 			timeDimensions: [],
 			dimensions,
 			filters: [],
-			timezone
+			timezone,
+			renewQuery
 		};
 
 		if (segments) {
@@ -212,13 +213,20 @@ class ActivityChart extends Component {
 
 					return (
 						<div className={classes.root}>
+							<Hidden smUp>
+								<Typography className={classes.legendTitle}>{title}</Typography>
+							</Hidden>
 							<DoughnutChart
 								{...props}
 								colors={COLORS_SERIES}
 								resultSet={completeResultSet}
 							/>
 							<div className={classes.legendContainer}>
-								<Typography className={classes.legendTitle}>{title}</Typography>
+								<Hidden smDown>
+									<Typography className={classes.legendTitle}>
+										{title}
+									</Typography>
+								</Hidden>
 								<LegendRows resultSet={completeResultSet}/>
 							</div>
 						</div>
@@ -237,7 +245,8 @@ ActivityChart.propTypes = {
 	legendKeyMap: PropTypes.object.isRequired,
 	measures: PropTypes.array.isRequired,
 	dimensions: PropTypes.array.isRequired,
-	segments: PropTypes.array
+	segments: PropTypes.array,
+	renewQuery: PropTypes.bool
 };
 
 export default withStyles(styles)(ActivityChart);

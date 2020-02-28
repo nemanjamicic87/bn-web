@@ -182,11 +182,15 @@ export class TicketCountReport {
 	get countsAndSalesByEventId() {
 		const results = {};
 		const { counts, sales, fees } = this.countAndSalesData;
-		const eventIds = (counts || [])
+		const mergedData = (counts || [])
 			.concat(sales || [])
 			.concat(fees || [])
-			.map(item => item.event_id)
-			.sort();
+			.map(item => item)
+			//Sort by event date
+			.sort(function(a, b) {
+				return new Date(b.event_start) - new Date(a.event_start);
+			});
+		const eventIds = mergedData.map(item => item.event_id);
 		eventIds.forEach(eventId => {
 			if (!results.hasOwnProperty(eventId)) {
 				results[eventId] = {
@@ -214,6 +218,7 @@ export class TicketCountReport {
 	get dataByTicketPricing() {
 		const allEventData = this.countsAndSalesByEventId;
 		const results = {};
+
 		for (const eventId in allEventData) {
 			const eventData = allEventData[eventId];
 			const { name, counts = [], sales = [] } = eventData;
@@ -246,8 +251,10 @@ export class TicketCountReport {
 					};
 				}
 			});
+
 			results[eventId] = eventResult;
 		}
+
 		return results;
 	}
 
@@ -302,17 +309,19 @@ export class TicketCountReport {
 			"total_sold_count",
 			"total_sold_in_cents"
 		];
+
 		for (const eventId in allEventData) {
 			const { tickets } = allEventData[eventId];
 			for (const ticketTypeId in tickets) {
 				const ticketSalesPricing = tickets[ticketTypeId].sales;
 				const tmpGroupByPrice = {};
-
 				ticketSalesPricing.forEach(row => {
 					//Group by price and fees, but if there's a hold_id, group by that as well
 					const groupingKey = `pricekey-${row.ticket_pricing_price_in_cents +
 						row.promo_code_discounted_ticket_price}
-					${groupFees ? `-fees-${row.client_online_fees_in_cents}` : ""}${row.hold_id ? `-hold-${row.hold_id}` : ""}`;
+					${groupFees ? `-fees-${row.client_online_fees_in_cents}` : ""}${
+	row.hold_id ? `-hold-${row.hold_id}` : ""
+}`;
 
 					//const ticketPricingPriceInCents = row.ticket_pricing_price_in_cents;
 					if (!tmpGroupByPrice.hasOwnProperty(groupingKey)) {

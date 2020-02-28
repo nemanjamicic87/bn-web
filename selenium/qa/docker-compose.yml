@@ -1,5 +1,5 @@
 # To execute this docker-compose yml file use `docker-compose -f <file_name> up --build test`
-#--build test option is so that each time docker compose is run test service is rebuild, so that new changes to code 
+#--build test option is so that each time docker compose is run test service is rebuild, so that new changes to code
 # are copied to container, however if container already exists, mavan repository is not downloaded again (so that is chached)
 # Add the `-d` flag at the end for detached execution
 version: "3"
@@ -31,6 +31,17 @@ services:
       - HUB_PORT=4444
     ports:
       - "9002:5900"
+  firefox-debug:
+    image: selenium/node-firefox-debug:3.141.59-selenium
+    volumes:
+      - /dev/shm:/dev/shm
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+    ports:
+      - "9002:5900"
 
   firefox:
     image: selenium/node-firefox:3.141.59-selenium
@@ -41,45 +52,79 @@ services:
     environment:
       - HUB_HOST=selenium-hub
       - HUB_PORT=4444
+
   test:
     build: ./
     depends_on:
       - chrome
       - firefox
     volumes:
-      - /usr/src/selenium:/usr/src/report
-      - /usr/src/maven:/root/.m2
+      - ./tmp/selenium:/usr/src/report
+      - ./tmp/maven:/root/.m2
+    env_file:
+      - .env
     environment:
       - HUB_HOST=selenium-hub
       - HUB_PORT=4444
-      - BASE_URL=https://develop.bigneon.com
 
   test-chrome:
     build:
       context: .
       dockerfile: local.Dockerfile
     depends_on:
-      - chrome
+      - chrome-debug
     volumes:
-      - /usr/src/selenium:/usr/src/report
-      - /usr/src/maven:/root/.m2
+      - ./tmp/selenium:/usr/src/report
+      - ./tmp/maven:/root/.m2
+    env_file:
+      - .env
     environment:
       - HUB_HOST=selenium-hub
       - HUB_PORT=4444
-      - BASE_URL=https://develop.bigneon.com
       - CONFIG=chrome.suite.conf.json
-      
+
   test-firefox:
-    build: 
+    build:
       context: .
       dockerfile: local.Dockerfile
     depends_on:
       - firefox
     volumes:
-      - /usr/src/selenium:/usr/src/report
-      - /usr/src/maven:/root/.m2
+      - ./tmp/selenium:/usr/src/report
+      - ./tmp/maven:/root/.m2
+    env_file:
+      - .env
     environment:
       - HUB_HOST=selenium-hub
       - HUB_PORT=4444
-      - BASE_URL=https://develop.bigneon.com
+      - CONFIG=firefox.suite.conf.json
+  test-chrome-debug:
+    build:
+      context: .
+      dockerfile: local.Dockerfile
+    depends_on:
+      - chrome-debug
+    volumes:
+      - ./tmp/selenium:/usr/src/report
+      - ./tmp/maven:/root/.m2
+    env_file:
+      - .env
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - CONFIG=chrome.suite.conf.json
+  test-firefox-debug:
+    build:
+      context: .
+      dockerfile: local.Dockerfile
+    depends_on:
+      - firefox-debug
+    volumes:
+      - ./tmp/selenium:/usr/src/report
+      - ./tmp/maven:/root/.m2
+    env_file:
+      - .env
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
       - CONFIG=firefox.suite.conf.json

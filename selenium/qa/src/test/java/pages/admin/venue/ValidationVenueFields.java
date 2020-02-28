@@ -62,7 +62,8 @@ public class ValidationVenueFields extends AbstractBase{
 		if (isExplicitlyWaitVisible(2, element)) {
 			getAccessUtils().refreshElement(element);
 			String color = element.getCssValue("color");
-			if (color.equals(ProjectUtils.CSS_REQUIRED_FIELD_COLOR)) {
+			if (color.equals(ProjectUtils.CSS_REQUIRED_FIELD_COLOR) ||
+					color.equals(ProjectUtils.CSS_REQUIRED_FIELD_COLOR_RGBA)) {
 				return true;
 			}
 		}

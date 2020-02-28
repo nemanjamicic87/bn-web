@@ -5,7 +5,10 @@ import Settings from "../../../../config/settings";
 //Reference: https://github.com/nfl/react-helmet
 
 const Meta = props => {
-	const { title, description } = props;
+	const { title, description, slugUri } = props;
+
+	const landingUrl = Settings().webUrl;
+	const slugUrl = `${landingUrl}/${slugUri}`;
 	return (
 		<Helmet
 			title={title}
@@ -15,7 +18,7 @@ const Meta = props => {
 					content: "Big Neon - The new standard in event ticketing"
 				},
 				{ property: "og:type", content: "website" },
-				{ property: "og:url", content: Settings().webUrl },
+				{ property: "og:url", content: slugUrl },
 				{
 					property: "og:description",
 					content:
@@ -23,7 +26,7 @@ const Meta = props => {
 				},
 				{
 					property: "og:image",
-					content: `${Settings().webUrl}/site/images/bigneon-screen-app.png`
+					content: `${landingUrl}/site/images/bigneon-screen-app.png`
 				},
 				{ name: "twitter:site", content: "bigneon.com" },
 				{ name: "twitter:creator", content: "bigneon" },
@@ -33,7 +36,7 @@ const Meta = props => {
 				},
 				{
 					name: "twitter:image",
-					content: `${Settings().webUrl}/site/images/bigneon-screen-app.png`
+					content: `${landingUrl}/site/images/bigneon-screen-app.png`
 				},
 				{
 					name: "description",
@@ -41,10 +44,10 @@ const Meta = props => {
 				}
 			]}
 			link={[
-				{ rel: "canonical", href: Settings().webUrl },
+				{ rel: "canonical", href: slugUrl },
 				{
 					rel: "image_src",
-					href: `${Settings().webUrl}/site/images/home-logo.png`
+					href: `${landingUrl}/site/images/home-logo.png`
 				}
 			]}
 		/>

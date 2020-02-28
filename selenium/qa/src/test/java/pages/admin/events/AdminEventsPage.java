@@ -26,7 +26,7 @@ public class AdminEventsPage extends BasePage {
 	@FindBy(xpath = "//body//main//a[@href='/admin/events/create']/button")
 	private WebElement createEventButton;
 
-	@FindBy(xpath = "//main//div[div[div[div[div[p[contains(text(),'Dashboard')]]]]]]")
+	@FindBy(xpath = "//main//div[div[div[div[div[p[contains(text(),'Events')]]]]]]")
 	private WebElement eventsDashboardContainer;
 
 	// relative to eventsDashboardContainer

@@ -1,12 +1,14 @@
 package test.facade;
 
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
 import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
+import org.testng.asserts.SoftAssert;
 
 import model.Event;
 import pages.admin.events.AdminEventsPage;
@@ -23,11 +25,7 @@ public class AdminEventStepsFacade extends BaseFacadeSteps {
 	private CreateEventPage createEventPage;
 	private AdminEventsPage adminEvents;
 	private AdminSideBar adminSideBar;
-	
-	private final String MANAGE_ORDER_FIRST_NAME_KEY = "mange_order_first_name";
-	private final String MANAGE_ORDER_LAST_NAME_KEY = "manage_order_last_name";
-	private final String MANAGE_ORDER_TICKET_NUMBER_KEY = "manage_order_ticket_number";
-	
+
 	private Map<String, Object> dataMap;
 
 	public AdminEventStepsFacade(WebDriver driver) {
@@ -51,19 +49,20 @@ public class AdminEventStepsFacade extends BaseFacadeSteps {
 		return adminEvents.findEventByName(event.getEventName());
 	}
 
-	public EventSummaryComponent findEventWithNameAndPredicate(Event event, Predicate<EventSummaryComponent> predicate) {
+	public EventSummaryComponent findEventWithNameAndPredicate(Event event,
+			Predicate<EventSummaryComponent> predicate) {
 		EventSummaryComponent selectedEvent = adminEvents.findEvent(event.getEventName(), predicate);
 		return selectedEvent;
 	}
 
 	public EventSummaryComponent findEventIsOpenedAndHasSoldItem(Event event) {
-		EventSummaryComponent selectedEvent =  adminEvents.findEvent(event.getEventName(),
+		EventSummaryComponent selectedEvent = adminEvents.findEvent(event.getEventName(),
 				comp -> comp.isEventPublished() && comp.isEventOnSale() && comp.isSoldToAmountGreaterThan(0));
 		return selectedEvent;
 	}
 
-	public EventSummaryComponent givenAnyEventWithPredicateExists(Event event, Predicate<EventSummaryComponent> predicate)
-			throws URISyntaxException {
+	public EventSummaryComponent givenAnyEventWithPredicateExists(Event event,
+			Predicate<EventSummaryComponent> predicate) throws URISyntaxException {
 		EventSummaryComponent selectedEvent = adminEvents.findEvent(predicate);
 		if (selectedEvent == null) {
 			createNewRandomEvent(event);
@@ -76,8 +75,9 @@ public class AdminEventStepsFacade extends BaseFacadeSteps {
 			Predicate<EventSummaryComponent> predicate) throws URISyntaxException {
 		return givenEventWithNameAndPredicateExists(event, predicate, true);
 	}
-	
-	public EventSummaryComponent givenEventWithNameAndPredicateExists(Event event, Predicate<EventSummaryComponent> predicate, boolean randomizeName) throws URISyntaxException {
+
+	public EventSummaryComponent givenEventWithNameAndPredicateExists(Event event,
+			Predicate<EventSummaryComponent> predicate, boolean randomizeName) throws URISyntaxException {
 		EventSummaryComponent selectedEvent = adminEvents.findEvent(event.getEventName(), predicate);
 		if (selectedEvent == null) {
 			createNewEvent(event, randomizeName);
@@ -108,7 +108,7 @@ public class AdminEventStepsFacade extends BaseFacadeSteps {
 
 	public void whenUserGoesToEventDashboard(Event event) {
 		givenUserIsOnAdminEventsPage();
-		EventSummaryComponent eventSummary = findEventWithNameAndPredicate(event, comp-> !comp.isEventCanceled());
+		EventSummaryComponent eventSummary = findEventWithNameAndPredicate(event, comp -> !comp.isEventCanceled());
 		eventSummary.clickOnEvent();
 	}
 	
@@ -202,7 +202,29 @@ public class AdminEventStepsFacade extends BaseFacadeSteps {
 		createEventPage.addTicketTypes(event.getTicketTypes());
 	}
 
-	
+	public void whenUserExecutesMoveDatesToPastSteps(boolean isTestValid, SoftAssert sa, int minusStartDateDays, int minusEndDateDays) {
+		if (minusEndDateDays > minusStartDateDays) {
+			throw new IllegalArgumentException("start date must be before or same as end date");
+		}
+		LocalDate startDate = createEventPage.getStartDateValue();
+		LocalDate endDate = createEventPage.getEndDateValue();
+		LocalDate currentDate = LocalDate.now();
+		startDate = currentDate.minusDays(minusStartDateDays);
+		endDate = currentDate.minusDays(minusEndDateDays);
+		createEventPage.enterDates(startDate, endDate);
+		createEventPage.clickOnUpdateButton();
+		if (!isTestValid) {
+			boolean retVal = createEventPage.isNotificationDisplayedWithMessage(MsgConstants.INVALID_EVENT_DETAILS);
+			if (!retVal) {
+				retVal = createEventPage.isNotificationDisplayedWithMessage(MsgConstants.EVENT_WITH_SALES_CANT_MOVE_TO_PAST_DATE);
+			}
+			sa.assertTrue(retVal, MsgConstants.INVALID_EVENT_DETAILS + " message notification not displayed");
+		} else {
+			boolean retVal = createEventPage.isNotificationDisplayedWithMessage(MsgConstants.EVENT_PUBLISHED);
+			sa.assertTrue(retVal, MsgConstants.EVENT_PUBLISHED + " message not displayed");
+		}
+	}
+
 	protected void setData(String key, Object value) {
 		dataMap.put(key, value);
 	}

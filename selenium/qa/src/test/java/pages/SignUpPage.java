@@ -4,7 +4,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import model.User;
-import pages.components.RecaptchaFrame;
 import utils.Constants;
 
 public class SignUpPage extends BasePage {
@@ -65,7 +64,7 @@ public class SignUpPage extends BasePage {
 		waitVisibilityAndSendKeys(emailField, emailAddress);
 		waitVisibilityAndSendKeys(passwordField, password);
 		waitVisibilityAndSendKeys(confirmPasswordField, confirmPassword);
-		new RecaptchaFrame(driver).clickOnRecaptcha();
+//		new RecaptchaFrame(driver).clickOnRecaptcha();
 		waitVisibilityAndBrowserCheckClick(createAccountButton);
 	}
 }

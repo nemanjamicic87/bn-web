@@ -182,7 +182,7 @@ class FanHistoryActivityCard extends Component {
 			cancelled_by,
 			ticket_numbers
 		} = this.props.item;
-
+		
 		const { name, venue } = this.props.event;
 
 		const {
@@ -693,19 +693,23 @@ class FanHistoryActivityCard extends Component {
 												[classes.boldSpan]: true
 											})}
 										>
-											{profile.first_name}&nbsp;{profile.last_name}&nbsp;
+											{action === "Accepted"
+												? `${accepted_by.first_name} ${accepted_by.last_name} `
+												: `${initiated_by.first_name} ${
+													initiated_by.last_name
+												  } `}
 										</span>
 										<span className={classes.boldSpan}>
 											transferred ({action})&nbsp;
 										</span>
 										{ticket_ids.length > 1 ? (
-											<span>{ticket_ids.length} tickets to </span>
-										) : (
-											<span>{ticket_ids.length} ticket to </span>
-										)}
-										<span className={classes.boldSpan}>
-											{destination_addresses}
-										</span>
+											<span>{ticket_ids.length} tickets {action !== "Accepted" ? "to" : null} </span>
+										) : <span>{ticket_ids.length} ticket {action !== "Accepted" ? "to" : null} </span>}
+										{action !== "Accepted" ? (
+											<span className={classes.boldSpan}>
+												{destination_addresses}
+											</span>
+										) : null}
 									</Typography>
 									<div onClick={onExpandChange} className={classes.showHideRow}>
 										<Typography className={classes.showHide}>
@@ -753,18 +757,25 @@ class FanHistoryActivityCard extends Component {
 											)}
 										</FanActivityTransferRow>
 										<FanActivityTransferRow>
-											<Typography className={classes.darkGreySubtitle}>
-												{ticket_numbers.map(item => {
-													return item;
+											<div className={classes.darkGreySubtitle}>
+												{ticket_numbers.map((item, index) => {
+													return (
+														<Typography
+															key={index}
+															className={classes.darkGreySubtitle}
+														>
+															{item}
+														</Typography>
+													);
 												})}
-												<br/>(
+												(
 												<Link to={orderPath}>
 													<span className={classes.pinkSpan}>
 														Order #{order_number}
 													</span>
 												</Link>
 												)
-											</Typography>
+											</div>
 											<Typography className={classes.greySubtitle}>
 												<span className={classes.pinkSpan}>
 													{initiated_by !== null ? initiated_by.full_name : "-"}
@@ -1365,20 +1376,23 @@ class FanHistoryActivityCard extends Component {
 												[classes.boldSpan]: true
 											})}
 										>
-											{profile.first_name}&nbsp;{profile.last_name}
-											&nbsp;
+											{action === "Accepted"
+												? `${accepted_by.first_name} ${accepted_by.last_name} `
+												: `${initiated_by.first_name} ${
+													initiated_by.last_name
+												} `}
 										</span>
 										<span className={classes.boldSpan}>
 											transferred ({action})&nbsp;
 										</span>
 										{ticket_ids.length > 1 ? (
-											<span>{ticket_ids.length} tickets to </span>
-										) : (
-											<span>{ticket_ids.length} ticket to </span>
-										)}
-										<span className={classes.boldSpan}>
-											{destination_addresses}
-										</span>
+											<span>{ticket_ids.length} tickets {action !== "Accepted" ? "to" : null} </span>
+										) : <span>{ticket_ids.length} ticket {action !== "Accepted" ? "to" : null} </span>}
+										{action !== "Accepted" ? (
+											<span className={classes.boldSpan}>
+												{destination_addresses}
+											</span>
+										) : null}
 									</Typography>
 								</div>
 								<div className={classes.mobileHeaderBottomRow}>
@@ -1405,9 +1419,16 @@ class FanHistoryActivityCard extends Component {
 											<Typography className={classes.greySubtitleCap}>
 												Tickets:
 											</Typography>
-											<Typography className={classes.darkGreySubtitle}>
+											<div className={classes.darkGreySubtitle}>
 												{ticket_numbers.map((item, index) => {
-													return item;
+													return (
+														<Typography
+															key={index}
+															className={classes.darkGreySubtitle}
+														>
+															{item}
+														</Typography>
+													);
 												})}
 												&nbsp; (
 												<Link to={orderPath}>
@@ -1416,7 +1437,7 @@ class FanHistoryActivityCard extends Component {
 													</span>
 												</Link>
 												)
-											</Typography>
+											</div>
 										</div>
 										<br/>
 										<div>
@@ -1512,9 +1533,9 @@ class FanHistoryActivityCard extends Component {
 		const { cancelTransferKey } = this.state;
 
 		const canCancelTransfer =
-	            eligible_for_cancelling &&
-	            ((user.hasScope("transfer:cancel-accepted") && status === "Completed")
-								|| (user.hasScope("transfer:cancel") && status === "Pending"));
+			eligible_for_cancelling &&
+			((user.hasScope("transfer:cancel-accepted") && status === "Completed") ||
+				(user.hasScope("transfer:cancel") && status === "Pending"));
 
 		return (
 			<div>
@@ -1528,7 +1549,9 @@ class FanHistoryActivityCard extends Component {
 					// onSuccess={() => this.refresh()}
 				/>
 				<Hidden smDown>{this.renderActivity(type, canCancelTransfer)}</Hidden>
-				<Hidden mdUp>{this.renderActivityMobile(type, canCancelTransfer)}</Hidden>
+				<Hidden mdUp>
+					{this.renderActivityMobile(type, canCancelTransfer)}
+				</Hidden>
 			</div>
 		);
 	}

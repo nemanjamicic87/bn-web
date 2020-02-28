@@ -300,10 +300,10 @@ class CheckoutForm extends Component {
 CheckoutForm.defaultProps = {
 	cryptoIcons: [
 		"crypto/BTC.png",
-		"crypto/DCR.png",
-		"crypto/LNBT.png",
-		"crypto/LTC.png",
-		"crypto/XMR.png"
+		// "crypto/DCR.png",
+		// "crypto/LNBT.png",
+		"crypto/XMR.png",
+		"crypto/LTC.png"
 	]
 };
 

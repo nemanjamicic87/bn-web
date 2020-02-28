@@ -66,7 +66,7 @@ const timeFormat = "hh:mm A";
 class DateTimePickerGroup extends Component {
 	constructor(props) {
 		super(props);
-		const { value } = this.props;
+		const { value, timezone } = this.props;
 
 		this.state = {
 			anchorEl: null,
@@ -190,7 +190,8 @@ class DateTimePickerGroup extends Component {
 			classes,
 			value,
 			timeIncrement = 30,
-			disabled
+			disabled,
+			timezone
 		} = this.props;
 		const { label } = this.props;
 
@@ -245,7 +246,7 @@ class DateTimePickerGroup extends Component {
 						onBlur={onBlur}
 						onFocus={onFocus}
 						placeholder={placeholder || placeHolders[type]}
-						format={value && value._z ? value._z.name : "UTC"} //See src/helpers/customPickerUtils.js for the reason the timezone is passed through as the format
+						format={value && value._z ? value._z.name : timezone} //See src/helpers/customPickerUtils.js for the reason the timezone is passed through as the format
 						keyboard
 						InputProps={inputProps}
 						clearable
@@ -314,13 +315,19 @@ class DateTimePickerGroup extends Component {
 						</Popover>
 					</span>
 				) : null}
-				<FormHelperText id={`${name}-error-text`}>
-					{!isTimeValid ? "Not a valid time (e.g. 9:30 PM)" : error}
-				</FormHelperText>
+				{!isTimeValid || error ? (
+					<FormHelperText id={`${name}-error-text`}>
+						{!isTimeValid ? "Not a valid time (e.g. 9:30 PM)" : error}
+					</FormHelperText>
+				) : null}
 			</FormControl>
 		);
 	}
 }
+
+DateTimePickerGroup.defaultProps = {
+	timezone: "UTC"
+};
 
 DateTimePickerGroup.propTypes = {
 	type: PropTypes.oneOf(["date", "time"]),
@@ -333,7 +340,8 @@ DateTimePickerGroup.propTypes = {
 	onBlur: PropTypes.func,
 	onFocus: PropTypes.func,
 	timeIncrement: PropTypes.number,
-	disabled: PropTypes.bool
+	disabled: PropTypes.bool,
+	timezone: PropTypes.string
 };
 
 export default withStyles(styles)(DateTimePickerGroup);

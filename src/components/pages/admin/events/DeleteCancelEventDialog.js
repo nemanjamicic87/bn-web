@@ -119,7 +119,7 @@ class DeleteCancelEventDialog extends React.Component {
 							className={classes.btnStyle}
 							disabled={isSubmitting}
 							type="submit"
-							variant="warning"
+							variant="secondary8border"
 						>
 							{isSubmitting
 								? isDelete

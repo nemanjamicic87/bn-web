@@ -3,6 +3,7 @@ import { withStyles, Typography, Hidden } from "@material-ui/core";
 import LandingAppBar from "../../../elements/header/LandingAppBar";
 import user from "../../../../stores/user";
 import { fontFamilyBold } from "../../../../config/theme";
+import FormattedLandingDescription from "./FormattedLandingDescription";
 
 const styles = theme => ({
 	root: {
@@ -22,7 +23,7 @@ const styles = theme => ({
 		color: "#fff",
 		lineHeight: "72px",
 		[theme.breakpoints.down("sm")]: {
-			fontSize: theme.typography.fontSize * 2.9,
+			fontSize: 32,
 			paddingLeft: theme.spacing.unit * 3,
 			paddingRight: theme.spacing.unit * 3
 		}
@@ -48,6 +49,18 @@ const styles = theme => ({
 		marginLeft: theme.spacing.unit * 1.5,
 		color: "#fff",
 		cursor: "pointer"
+	},
+	descStyle: {
+		color: "#B0B6C6",
+		fontSize: 21,
+		lineHeight: "24px",
+		[theme.breakpoints.down("sm")]: {
+			fontSize: 15,
+			lineHeight: "18px",
+			paddingLeft: theme.spacing.unit * 3,
+			paddingRight: theme.spacing.unit * 3,
+			maxWidth: "100vw"
+		}
 	}
 });
 
@@ -62,7 +75,7 @@ const SlugLandingHero = props => {
 			</Hidden>
 
 			<div className={props.classes.headingContainer}>
-				<Typography className={props.classes.heading}>
+				<Typography variant={"headline"} className={props.classes.heading}>
 					{props.pageTitle}
 				</Typography>
 				<Typography className={props.classes.subHeading}>
@@ -73,6 +86,13 @@ const SlugLandingHero = props => {
 						</a>
 					) : null}
 				</Typography>
+				{props.description ? (
+					<Typography className={props.classes.descStyle}>
+						<FormattedLandingDescription>
+							{props.description}
+						</FormattedLandingDescription>
+					</Typography>
+				) : null}
 			</div>
 		</div>
 	);

@@ -1,10 +1,5 @@
 import React, { Component } from "react";
-import {
-	Editor,
-	EditorState,
-	RichUtils,
-	getDefaultKeyBinding
-} from "draft-js";
+import { Editor, EditorState, RichUtils, getDefaultKeyBinding } from "draft-js";
 import { convertToHTML, convertFromHTML } from "draft-convert";
 import { withStyles } from "@material-ui/core";
 import PropTypes from "prop-types";
@@ -152,9 +147,25 @@ class RichTextInputField extends Component {
 		}, 200);
 	}
 
+	componentDidMount() {
+		const currentHtml = this.props.value;
+		if (currentHtml) {
+			this.htmlHasBeenSet = true;
+			if (currentHtml === "<p></p>") {
+				return;
+			} else {
+				const editorState = convertHtmlPropToEditorState(currentHtml);
+				this.setState({ editorState });
+
+				if (currentHtml.indexOf("<a") > -1) {
+					this.applyLinkStyle();
+				}
+			}
+		}
+	}
+
 	componentDidUpdate(prevProps, prevState, snapshot) {
 		const currentHtml = this.props.value;
-
 		if (
 			!this.htmlHasBeenSet &&
 			currentHtml &&
@@ -216,8 +227,10 @@ class RichTextInputField extends Component {
 			}
 			case 13: {
 				// SHIFT + RETURN <br/>
-				if(e.shiftKey) {
-					const newEditorState = RichUtils.insertSoftNewline(this.state.editorState);
+				if (e.shiftKey) {
+					const newEditorState = RichUtils.insertSoftNewline(
+						this.state.editorState
+					);
 					if (newEditorState !== this.state.editorState) {
 						this.onChange(newEditorState);
 					}
@@ -294,7 +307,7 @@ class RichTextInputField extends Component {
 							onChange={this.onChange}
 							blockStyleFn={getBlockStyle}
 							customStyleMap={styleMap}
-							editorState={editorState}
+							// editorState={editorState}
 							handleKeyCommand={this.handleKeyCommand.bind(this)}
 							keyBindingFn={this.mapKeyToEditorCommand.bind(this)}
 							onChange={this.onChange}

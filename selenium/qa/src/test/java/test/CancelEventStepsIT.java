@@ -40,7 +40,6 @@ public class CancelEventStepsIT extends BaseSteps {
 		boolean isEventCanceled = eventWrapper.thenEventShouldBeCanceled(event);
 		Assert.assertTrue(isEventCanceled);
 		
-		
 		loginPage.logOut();
 	
 	}

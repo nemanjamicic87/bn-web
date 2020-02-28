@@ -15,8 +15,8 @@ import DashboardIcon from "@material-ui/icons/Dashboard";
 import EditIcon from "@material-ui/icons/Edit";
 import ViewIcon from "@material-ui/icons/Link";
 import CancelIcon from "@material-ui/icons/Cancel";
+import RemoveRedEye from "@material-ui/icons/RemoveRedEye";
 import moment from "moment";
-
 import notifications from "../../../../stores/notifications";
 import Button from "../../../elements/Button";
 import StyledLink from "../../../elements/StyledLink";
@@ -27,6 +27,10 @@ import EventSummaryCard from "./EventSummaryCard";
 import user from "../../../../stores/user";
 import Card from "../../../elements/Card";
 import Loader from "../../../elements/loaders/Loader";
+import CloneEventDialog from "./CloneEventDialog";
+import { LibraryAdd } from "@material-ui/icons";
+import { Pagination, urlPageParam } from "../../../elements/pagination";
+import Settings from "../../../../config/settings";
 
 const styles = theme => ({
 	paper: {
@@ -63,9 +67,11 @@ class EventsList extends Component {
 			isDelete: false,
 			deleteCancelEventId: null,
 			eventMenuSelected: null,
+			cloneIsOpen: null,
 			eventSlug: null,
 			optionsAnchorEl: null,
-			upcomingOrPast: this.props.match.params.upcomingOrPast || "upcoming"
+			upcomingOrPast: this.props.match.params.upcomingOrPast || "upcoming",
+			paging: null
 		};
 
 		this.expandCardDetails = this.expandCardDetails.bind(this);
@@ -86,7 +92,7 @@ class EventsList extends Component {
 	}
 
 	componentDidMount() {
-		this.updateEvents();
+		this.updateEvents("", 0);
 	}
 
 	componentWillUnmount() {
@@ -103,22 +109,31 @@ class EventsList extends Component {
 		this.setState({ optionsAnchorEl: null });
 	};
 
-	updateEvents() {
+	changePage(page = urlPageParam()) {
+		this.updateEvents("", page);
+	}
+
+	updateEvents(query = "", page = urlPageParam()) {
 		//A bit of a hack, we might not have set the current org ID yet for this admin so keep checking
 		if (!user.currentOrganizationId) {
 			this.timeout = setTimeout(this.updateEvents.bind(this), 100);
 			return;
 		}
 
-		this.setState({ events: null }, () => {
+		const pageLimit = Settings().defaultPageLimit;
+
+		this.setState({ events: null, paging: null }, () => {
 			const { upcomingOrPast } = this.state;
 			Bigneon()
 				.organizations.events.index({
 					organization_id: user.currentOrganizationId,
-					past_or_upcoming: upcomingOrPast
+					past_or_upcoming: upcomingOrPast,
+					page,
+					limit: pageLimit
 				})
 				.then(eventResponse => {
-					this.setState({ events: eventResponse.data.data }); //@TODO Implement pagination
+					const { data, paging } = eventResponse.data;
+					this.setState({ events: data, paging });
 				})
 				.catch(error => {
 					console.error(error);
@@ -194,6 +209,24 @@ class EventsList extends Component {
 						// onClick: () =>
 						// 	this.props.history.push(`/events/${eventMenuSelected}`),
 						MenuOptionIcon: ViewIcon
+					},
+					{
+						text: "Event overview",
+						disabled: !user.hasScope("event:write"),
+						onClick: () =>
+							this.props.history.push(
+								`/admin/events/${eventMenuSelected}/event-overview`
+							),
+						MenuOptionIcon: RemoveRedEye
+					},
+					{
+						text: "Clone event",
+						disabled: !user.hasScope("event:write"),
+						onClick: () =>
+							this.setState({
+								cloneEventId: eventMenuSelected
+							}),
+						MenuOptionIcon: LibraryAdd
 					},
 					{
 						text: "Cancel event",
@@ -287,6 +320,8 @@ class EventsList extends Component {
 							onExpandClick={this.expandCardDetails}
 							ticketTypes={event.ticket_types}
 							eventEnded={eventEnded}
+							publishDate={event.publish_date}
+							status={event.status}
 						/>
 					</Grid>
 				);
@@ -301,7 +336,13 @@ class EventsList extends Component {
 	}
 
 	render() {
-		const { deleteCancelEventId, upcomingOrPast, isDelete } = this.state;
+		const {
+			deleteCancelEventId,
+			upcomingOrPast,
+			isDelete,
+			cloneEventId,
+			paging
+		} = this.state;
 		const { classes } = this.props;
 
 		return (
@@ -316,11 +357,15 @@ class EventsList extends Component {
 						)
 					}
 				/>
+				<CloneEventDialog
+					id={cloneEventId}
+					onClose={() =>
+						this.setState({ cloneEventId: null }, this.updateEvents.bind(this))
+					}
+				/>
 				<Grid container spacing={0} alignItems="center">
 					<Grid item xs={6} sm={6} lg={6}>
-						<PageHeading iconUrl="/icons/events-multi.svg">
-							Dashboard
-						</PageHeading>
+						<PageHeading iconUrl="/icons/events-multi.svg">Events</PageHeading>
 					</Grid>
 					<Grid
 						item
@@ -370,6 +415,15 @@ class EventsList extends Component {
 					</Grid>
 
 					{this.renderEvents()}
+					{paging !== null ? (
+						<Pagination
+							isLoading={false}
+							paging={paging}
+							onChange={this.changePage.bind(this)}
+						/>
+					) : (
+						<div/>
+					)}
 				</Grid>
 			</div>
 		);

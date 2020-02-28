@@ -91,8 +91,9 @@ public class CreateOrganizationPage extends BasePage {
 
 	private void enterState(Organization org) {
 		GenericDropDown dropDown = new GenericDropDown(driver, stateDropDownActivate, stateDropDownContainer);
+		String state = org.getState() + " (" + org.getStateAbbr() + ")";
 		dropDown.selectElementFromDropDownHiddenInput(
-				GenericDropDown.dropDownListContainsXpath(org.getState()),
+				GenericDropDown.dropDownListContainsXpath(state),
 				org.getState());
 	}
 

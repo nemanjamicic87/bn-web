@@ -7,6 +7,8 @@ import {
 	fontFamilyDemiBold,
 	secondaryHex
 } from "../../../../../../../config/theme";
+import moment from "moment-timezone";
+import { TIME_FORMAT_FULL_DESCRIPTION } from "../../../../../../../helpers/time";
 
 const styles = theme => ({
 	root: {},
@@ -46,25 +48,29 @@ const styles = theme => ({
 	}
 });
 
-const Header = ({
-	classes,
-	order_number,
-	user,
-	on_behalf_of_user,
-	displayDate,
-	payment_method,
-	payment_provider,
-	platform,
-	total_in_cents,
-	fees_in_cents,
-	total_refunded_in_cents
-}) => {
+const Header = (
+	{
+		classes,
+		order_number,
+		user,
+		on_behalf_of_user,
+		date: dateOfPurchase,
+		payment_method,
+		payment_provider,
+		platform,
+		total_in_cents,
+		fees_in_cents,
+		total_refunded_in_cents,
+		timezone
+	}
+) => {
 	const { first_name, last_name, id: userId, email } = on_behalf_of_user
 		? on_behalf_of_user
 		: user;
 
 	const orderTotalInCents = total_in_cents - fees_in_cents;
 
+	const displayDateOfPurchase = moment.utc(dateOfPurchase).tz(timezone).format(TIME_FORMAT_FULL_DESCRIPTION);
 	return (
 		<div>
 			<Typography className={classes.orderNumber}>
@@ -82,12 +88,16 @@ const Header = ({
 			</Typography>
 
 			<Typography className={classes.headerText}>
-				<span className={classes.demiBoldSpan}>Date of Purchase:</span>{" "}
-				{displayDate}
+				<span className={classes.demiBoldSpan}>
+					Date of Purchase:
+				</span>{" "}
+				{displayDateOfPurchase}
 			</Typography>
 
 			<Typography className={classes.headerText}>
-				<span className={classes.demiBoldSpan}>Method of Payment:</span>{" "}
+				<span className={classes.demiBoldSpan}>
+					Method of Payment:
+				</span>{" "}
 				{payment_method ? `${payment_method}` : ""}{" "}
 				{payment_provider ? `(${payment_provider})` : ""}{" "}
 				{platform ? `via ${platform}` : ""}
@@ -113,12 +123,13 @@ Header.propTypes = {
 	classes: PropTypes.object.isRequired,
 	order_number: PropTypes.string.isRequired,
 	user: PropTypes.object.isRequired,
-	displayDate: PropTypes.string.isRequired,
+	date: PropTypes.string.isRequired,
 	payment_method: PropTypes.string,
 	payment_provider: PropTypes.string,
 	platform: PropTypes.string.isRequired,
 	total_in_cents: PropTypes.number.isRequired,
-	fees_in_cents: PropTypes.number.isRequired
+	fees_in_cents: PropTypes.number.isRequired,
+	timezone: PropTypes.string.isRequired
 };
 
 export default withStyles(styles)(Header);

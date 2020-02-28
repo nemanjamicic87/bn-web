@@ -225,10 +225,10 @@ class RefundDialog extends Component {
 	}
 
 	onOverride = () => {
-		const { onClose, onOverride } = this.props;
+		const { onClose, onOverride, type } = this.props;
 		const { refundSuccessDetails } = this.state;
 		onClose();
-		onOverride();
+		onOverride(type);
 
 		if (refundSuccessDetails) {
 			//Reset the dialog content just after it's finished hiding so the user doesn't notice

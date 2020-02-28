@@ -58,7 +58,6 @@ const styles = theme => ({
 
 const DateFlag = props => {
 	const { classes, date, variant, size } = props;
-
 	const dayOfWeekText = (
 		<Typography
 			className={classNames({

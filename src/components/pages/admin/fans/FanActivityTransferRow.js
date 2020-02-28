@@ -6,7 +6,7 @@ import classNames from "classnames";
 const styles = theme => ({
 	root: {
 		display: "flex",
-		alignItems: "center"
+		alignItems: "start"
 	},
 	shaded: {
 		backgroundColor: "#F5F7FA",

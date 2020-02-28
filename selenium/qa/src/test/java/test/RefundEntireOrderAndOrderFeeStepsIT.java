@@ -4,7 +4,6 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import model.CreditCard;
 import model.Event;
 import model.Purchase;
 import model.User;
@@ -26,7 +25,7 @@ public class RefundEntireOrderAndOrderFeeStepsIT extends TemplateRefundFeeSteps 
 	@Override
 	public void customSteps() {
 		getOrderManageFacade().whenUserSelectsAllTicketsForRefund();
-		getOrderManageFacade().whenUserClicksOnOrderFeeCheckBox();
+		getOrderManageFacade().whenUserClicksOnOrderFeeCheckBox(true,true);
 		boolean isRefundButtonAmountCorrect = getOrderManageFacade().thenRefundButtonAmountShouldBeCorrect();
 		Assert.assertTrue(isRefundButtonAmountCorrect, "Refund amount on refund button incorect");
 
@@ -37,14 +36,12 @@ public class RefundEntireOrderAndOrderFeeStepsIT extends TemplateRefundFeeSteps 
 
 		boolean isStatusOfTicketRefunded = getOrderManageFacade().thenStatusOnAllTicketShouldBeRefunded();
 		Assert.assertTrue(isStatusOfTicketRefunded, "Not all tickets status is refunded");
-		getOrderManageFacade().whenUserSelectsRefundedStatusTicketForRefund();
+		boolean isTicketChecked = getOrderManageFacade().whenUserSelectsRefundedStatusTicketForRefundAndCheckBoxStatus();
 		
-		boolean isRefundButtonVisible = getOrderManageFacade().thenRefundButtonShouldBeVisible();
-//		Assert.assertFalse(isRefundButtonVisible,
-//				"Refund button on per order fee after already refunded should not be visible");
 		
 		boolean isRefundTotalCorrect = getOrderManageFacade().thenTotalOrderRefundShouldBeCorrect();
 		Assert.assertTrue(isRefundTotalCorrect);
+		Assert.assertFalse(isTicketChecked, "Refunded ticket checkbox should not be checked ");
 	}
 	
 	@DataProvider(name = "refund_entire_order_and_order_fee")

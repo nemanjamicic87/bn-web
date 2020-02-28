@@ -13,6 +13,7 @@ import moment from "moment-timezone";
 import servedImage from "../../../../helpers/imagePathHelper";
 import FanHistoryEventCard from "./FanHistoryEventCard";
 import StyledLink from "../../../elements/StyledLink";
+import Button from "../../../elements/Button";
 
 const imageSize = 100;
 
@@ -164,6 +165,22 @@ class Fan extends Component {
 		}
 	}
 
+	onDeleteAccount() {
+		const id = this.userId;
+
+		Bigneon()
+			.users.del({ id })
+			.then(() => {
+				this.loadFan();
+			})
+			.catch(error =>
+				notifications.showFromErrorResponse({
+					error,
+					defaultMessage: "Failed to delete account."
+				})
+			);
+	}
+
 	loadFan() {
 		const organization_id = user.currentOrganizationId;
 
@@ -270,7 +287,8 @@ class Fan extends Component {
 			last_name,
 			email,
 			facebook_linked,
-			profile_pic_url
+			profile_pic_url,
+			deleted_at
 		} = profile;
 
 		const profilePic = profile_pic_url ? (
@@ -294,6 +312,7 @@ class Fan extends Component {
 				<div className={classes.profileDetails}>
 					<Typography className={classes.name}>
 						{first_name} {last_name}
+						{ deleted_at ? "(deleted)" : "" }
 					</Typography>
 					<Typography className={classes.email}>{email}</Typography>
 					<div className={classes.facebookContainer}>
@@ -304,6 +323,17 @@ class Fan extends Component {
 								: "Facebook not connected"}
 						</Typography>
 					</div>
+					{user.isSuper  ? (
+						<div>
+							<Button
+								onClick={this.onDeleteAccount.bind(this)}
+								disabled={!!deleted_at}
+								variant="callToAction"
+							>
+								Delete Account
+							</Button>
+						</div>
+					) : null}
 				</div>
 			</div>
 		);

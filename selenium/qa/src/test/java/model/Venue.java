@@ -36,10 +36,10 @@ public class Venue extends Model implements Serializable {
 	private String country;
 	@JsonProperty("country_abbr")
 	private String countryAbbr;
-	
+
 	@JsonProperty("image_name")
 	private String imageName;
-	
+
 	public String getName() {
 		return name;
 	}
@@ -125,11 +125,11 @@ public class Venue extends Model implements Serializable {
 		ProjectUtils.appendFields(fields, sb);
 		return sb.toString();
 	}
-	
+
 	public static Venue generateVenueFromJson(String key) {
 		return (Venue) DataReader.getInstance().getObject(key, getTypeReference());
 	}
-	
+
 	public static TypeReference<Venue> getTypeReference(){
 		return new TypeReference<Venue>() {
 		};

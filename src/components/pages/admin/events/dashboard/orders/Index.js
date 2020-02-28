@@ -19,6 +19,7 @@ import moment from "moment-timezone";
 import SearchBox from "../../../../../elements/SearchBox";
 import OrderRow from "./OrderRow";
 import { Pagination, urlPageParam } from "../../../../../elements/pagination";
+import { TIME_FORMAT_MM_DD_YYYY_NO_TIMEZONE } from "../../../../../../helpers/time";
 
 const styles = theme => ({
 	root: {},
@@ -91,12 +92,12 @@ class OrderList extends Component {
 					salesStartStringUtc: publish_date,
 					venueTimeZone: venue.timezone
 				});
+				this.refreshOrders();
 			})
 			.catch(error => {
 				console.error(error);
 			});
 
-		this.refreshOrders();
 		this.loadPromoCodes();
 		this.loadTicketTypes();
 	}
@@ -108,7 +109,7 @@ class OrderList extends Component {
 
 		const { promoFilterId, ticketTypeFilterId } = this.state;
 		if (promoFilterId) {
-			params.promo_code_id = promoFilterId;
+			params.promo_code = promoFilterId;
 		}
 
 		if (ticketTypeFilterId) {
@@ -119,19 +120,19 @@ class OrderList extends Component {
 			.admin.orders(params)
 			.then(response => {
 				const { data, paging } = response.data;
-
 				const { venueTimeZone } = this.state;
-
 				//Set the qty of tickets bought and the formatted date
 				data.forEach(o => {
-					const date = o.paid_at ? o.paid_at : o.date;
-					o.displayDate = date
-						? moment
-							.utc(date)
+					const { paid_at: paidAt, date: orderDate } = o;
+					let orderDisplayDate = paidAt ? paidAt : orderDate;
+					orderDisplayDate = orderDisplayDate ?
+						moment
+							.utc(orderDisplayDate)
 							.tz(venueTimeZone)
-							.format("MM/DD/YYYY h:mm A")
+							.format(TIME_FORMAT_MM_DD_YYYY_NO_TIMEZONE)
 						: null;
 
+					o.displayDate = orderDisplayDate;
 					o.ticketCount = 0;
 					o.ticketTypeIds = [];
 					o.items.forEach(
@@ -179,7 +180,7 @@ class OrderList extends Component {
 			.then(response => {
 				const codes = response.data.data;
 				codes.forEach(c => {
-					promoCodes.push({ value: c.id, label: c.name });
+					promoCodes.push({ value: c.redemption_codes[0], label: c.name });
 				});
 
 				this.setState({ promoCodes });
@@ -329,7 +330,9 @@ class OrderList extends Component {
 						<Typography className={classes.pageSubTitle}>
 							Order management
 						</Typography>
-						<Typography className={classes.pageTitle}>Orders</Typography>
+						<Typography className={classes.pageTitle}>
+							Orders
+						</Typography>
 					</Grid>
 					<Grid item sm={3} md={3} lg={3}>
 						{this.renderPromoCodeFilter()}
@@ -365,7 +368,9 @@ class OrderList extends Component {
 					<Typography className={classes.pageSubTitle}>
 						Order management
 					</Typography>
-					<Typography className={classes.pageTitle}>Orders</Typography>
+					<Typography className={classes.pageTitle}>
+						Orders
+					</Typography>
 				</div>
 
 				<Grid container spacing={24}>

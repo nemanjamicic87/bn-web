@@ -23,7 +23,7 @@ public class AnnouncementPage extends BasePage{
 	private final String  SEND_PREVIEW_BUTTON_LABEL = "Send a preview";
 	private final String SEND_EMAIL_BUTTON_LABEL = "Send email";
 	
-	private final String ANNOUNCEMENT_TEXT_REG_EX = "Email all current ticket holders (0) to announce any major event updates including cancellation, postponement, rescheduled date/time, or new location. Disclaimer: Not intended for marketing purposes.";
+	private final String ANNOUNCEMENT_TEXT_REG_EX = "Email all current ticket holders to announce any major event updates including cancellation, postponement, rescheduled date/time, or new location.\nDisclaimer: Not intended for marketing purposes.";
 
 	public AnnouncementPage(WebDriver driver) {
 		super(driver);
@@ -68,22 +68,8 @@ public class AnnouncementPage extends BasePage{
 	
 	public boolean isAnnouncementTextValid() {
 		explicitWaitForVisiblity(announcementText);
-		String splitRegex = "\\(\\+?\\d+\\)";
 		String text = getAccessUtils().getTextOfElement(announcementText);
-		String[] templateTokens = ANNOUNCEMENT_TEXT_REG_EX.split(splitRegex);
-		String[] pageTokens = text.split(splitRegex);
-		boolean isValid = true;
-		if (pageTokens.length == templateTokens.length) {
-			for (int i = 0; i < pageTokens.length; i++) {
-				if (!pageTokens[i].equals(templateTokens[i])) {
-					isValid = false;
-				}
-			}
-			isValid = true;
-		} else {
-			isValid = false;
-		}
-		return isValid;
+		return text.contains(ANNOUNCEMENT_TEXT_REG_EX);
 	}
 
 }

@@ -19,11 +19,11 @@ const custLinks = [];
 const aboutLinks = [
 	{
 		label: "About Us",
-		href: `${rootUrl}/venues-and-promoters.html`
+		href: Settings().aboutLink
 	},
 	{
 		label: "Partner With Us",
-		href: `${rootUrl}/venues-and-promoters.html#contact-chat`
+		href: Settings().aboutChatLink
 	}
 ];
 const infoLinks = [

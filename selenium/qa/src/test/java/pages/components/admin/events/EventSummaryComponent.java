@@ -7,6 +7,7 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
 import model.Event;
 import pages.BaseComponent;
 import pages.components.dialogs.CancelEventDialog;
@@ -90,11 +91,12 @@ public class EventSummaryComponent extends BaseComponent {
 		return intElAmount;
 	}
 
-	public void cancelEvent() {
+	public boolean cancelEvent() {
 		openDropDown();
 		findActionAndClickInDropDown(dropDownXpathElement(cancelEventDDAction));
-		waitForTime(2000);
-		new CancelEventDialog(driver).clickOnCancelEventButton();
+		CancelEventDialog dialog = new CancelEventDialog(driver);
+		dialog.clickOnCancelEventButton();
+		return dialog.isInvisible(1000);
 	}
 
 	public DeleteEventDialog deleteEvent(Event event) {
@@ -111,7 +113,7 @@ public class EventSummaryComponent extends BaseComponent {
 		return SeleniumUtils.getChildElementFromParentLocatedBy(event, By.xpath(relativeEventNameXpath), driver).getText();
 	}
 
-	public void editEvent(Event event) {
+	public void whenUserSelectEditEventFromDropDown(Event event) {
 		openDropDown();
 		findActionAndClickInDropDown(dropDownXpathElement(editEventDDAction));
 	}

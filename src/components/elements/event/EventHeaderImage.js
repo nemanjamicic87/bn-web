@@ -91,7 +91,6 @@ const EventHeaderImage = props => {
 		organization = {},
 		artists = []
 	} = props;
-
 	//Adjust these thresholds as needed
 	const charCount = 65;
 	const eventNameIsLong = name.length > charCount;
@@ -111,7 +110,7 @@ const EventHeaderImage = props => {
 				style={{
 					backgroundImage: cover_image_url
 						? `linear-gradient(to top, #000000, rgba(0, 0, 0, 0)),url(${optimizedImageUrl(
-							cover_image_url
+							cover_image_url, "low", { w: 430 }
 						  )})`
 						: null,
 					height: height * 1.1

@@ -47,9 +47,10 @@ class Tickets {
 
 					const venueTimezone = event.venue.timezone || "America/Los_Angeles";
 
-					event.eventDate = moment.utc(event.event_start);
-					const displayShowTime = moment(event.eventDate).tz(venueTimezone);
-
+					const displayShowTime = moment
+						.utc(event.event_start)
+						.tz(venueTimezone);
+					event.displayShowTime = displayShowTime;
 					event.formattedDate = displayShowTime.format("ddd MM/DD/YY, h:mm A");
 
 					ticketGroups.push({ event, tickets });

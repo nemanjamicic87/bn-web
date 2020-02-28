@@ -8,6 +8,7 @@ import SearchToolBarInput from "../../elements/header/SearchToolBarInput";
 import getPhoneOS from "../../../helpers/getPhoneOS";
 import AppButton from "../../elements/AppButton";
 import Settings from "../../../config/settings";
+import { isReactNative } from "../../../helpers/reactNative";
 
 const styles = theme => ({
 	root: {
@@ -15,7 +16,6 @@ const styles = theme => ({
 		backgroundSize: "cover",
 		backgroundPosition: "center",
 		backgroundColor: "#19081e",
-		backgroundImage: "url(/images/homepage-bg.png)",
 		display: "flex",
 		flexDirection: "column",
 		minHeight: 500,
@@ -23,6 +23,12 @@ const styles = theme => ({
 			flexDirection: "column",
 			minHeight: 210
 		}
+	},
+	"webp": {
+		backgroundImage: "url(/images/homepage-bg.webp)"
+	},
+	"nowebp": {
+		backgroundImage: "url(/images/homepage-bg.jpg)"
 	},
 	headingContainer: {
 		display: "flex",
@@ -135,7 +141,8 @@ class Hero extends Component {
 		this.state = {
 			query: "",
 			isSearching: false,
-			phoneOS: getPhoneOS()
+			phoneOS: getPhoneOS(),
+			isReactNative: isReactNative()
 		};
 	}
 
@@ -161,10 +168,10 @@ class Hero extends Component {
 
 	render() {
 		const { history, classes } = this.props;
-		const { phoneOS } = this.state;
-
-		return (
-			<div className={classes.root}>
+		const { phoneOS, isReactNative } = this.state;
+		const { webPSupported } = Settings();
+		return isReactNative ? null : (
+			<div className={[classes.root, webPSupported ? classes.webp : classes.nowebp].join(" ")}>
 				{/*<Hidden smDown>*/}
 				{/*	<div className={classes.toolBar}>*/}
 				{/*		<img*/}

@@ -17,7 +17,7 @@ const styles = theme => {
 		mainContent: {
 			display: "flex",
 			marginBottom: theme.spacing.unit * 2,
-			alignItems: "flex-start",
+			alignItems: "center",
 			height: 45,
 			[theme.breakpoints.down("xs")]: {
 				height: 30

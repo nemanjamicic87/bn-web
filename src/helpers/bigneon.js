@@ -1,4 +1,4 @@
-import Bigneon from "bn-api-node/dist/bundle.client";
+import Bigneon from "bn-api-node";
 import errorReporting from "./errorReporting";
 
 let bigneon;
@@ -18,17 +18,24 @@ export const bigneonFactory = (options = {}, headers = {}, mockData, forceReInit
 		};
 
 		bigneon = new Bigneon.Server(options, headers, mockData);
-
+		const access_token = localStorage.getItem("access_token");
+		const refresh_token = localStorage.getItem("refresh_token") || null;
+		if (access_token) {
+			bigneon.client.setTokens({ access_token, refresh_token });
+		}
+		bigneon.client.OnTokenRefresh = onTokenRefresh;
 		errorReporting.addBreadcrumb("Bigneon client instantiated.");
 	}
 
-	const access_token = localStorage.getItem("access_token");
-	const refresh_token = localStorage.getItem("refresh_token") || null;
-	if (access_token) {
-		bigneon.client.setTokens({ access_token, refresh_token });
-	}
-
 	return bigneon;
+};
+
+const onTokenRefresh = async (server = {}, client = {}, data = {}) => {
+	const { access_token, refresh_token } = data.data;
+	localStorage.setItem("access_token", access_token);
+	localStorage.setItem("refresh_token", refresh_token);
+	client.setTokens(data.data);
+	return Promise.resolve(data);
 };
 
 export default bigneonFactory;

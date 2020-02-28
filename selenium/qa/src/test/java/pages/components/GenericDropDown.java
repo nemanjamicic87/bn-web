@@ -1,6 +1,5 @@
 package pages.components;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.openqa.selenium.By;
@@ -9,6 +8,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import pages.BaseComponent;
+import utils.JsUtils;
 
 public class GenericDropDown extends BaseComponent {
 
@@ -72,6 +72,7 @@ public class GenericDropDown extends BaseComponent {
 	
 	public List<String> getDropDownList(){
 		waitForTime(500);
+		new JsUtils(driver).jsScrollIntoView(activateDropDown);
 		waitVisibilityAndBrowserCheckClick(activateDropDown);
 		explicitWaitForVisiblity(dropDownContainer);
 		List<WebElement> list = getAccessUtils().getChildElementsFromParentLocatedBy(dropDownContainer, By.xpath(".//li"));

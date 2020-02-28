@@ -1,0 +1,71 @@
+.rich-edit-landing-content {
+	color: #b0b6c6;
+	/*border: solid;*/
+	font-family: TTCommons-Regular;
+
+	font-size: 21px;
+	line-height: 24px;
+}
+
+.rich-edit-landing-content h1 {
+	/*display: inline;*/
+	/*border: solid;*/
+	color: #2c3136;
+	size: 50px;
+	font-family: TTCommons-DemiBold;
+}
+
+.rich-edit-landing-content h2 {
+	/*display: inline;*/
+	color: #2c3136;
+	size: 30px;
+}
+
+.rich-edit-landing-content > #text {
+	font-size: 21px;
+	font-family: TTCommons-Regular;
+
+	margin: 0;
+	line-height: 24px;
+}
+
+.rich-edit-landing-content p {
+	font-size: 21px;
+	margin: 0;
+	line-height: 24px;
+}
+
+.rich-edit-landing-content a {
+	cursor: pointer;
+	color: #b0b6c6;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	hyphens: auto;
+	border-bottom: 1px solid #b0b6c6;
+	transition: border-bottom-color 0.25s ease-in-out;
+}
+.rich-edit-landing-content a:hover {
+	border-bottom-color: transparent;
+}
+
+.rich-edit-landing-content strong {
+	font-family: TTCommons-Bold;
+}
+
+.rich-edit-landing-content li {
+}
+
+.rich-edit-landing-content blockquote {
+}
+
+@media only screen and (max-width: 959px) {
+	.rich-edit-landing-content {
+		font-size: 15px;
+		line-height: 18px;
+	}
+	.rich-edit-landing-content p {
+		font-size: 15px;
+		line-height: 18px;
+		margin: 0;
+	}
+}

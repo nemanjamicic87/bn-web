@@ -172,6 +172,7 @@ class EventResultCard extends Component {
 			id,
 			name,
 			promo_image_url,
+			original_promo_image_url,
 			event_start,
 			venueName,
 			city,
@@ -185,9 +186,9 @@ class EventResultCard extends Component {
 		const { hoverId } = this.state;
 
 		const style = {};
-		if (promo_image_url) {
+		if (original_promo_image_url || promo_image_url) {
 			style.backgroundImage = `url(${optimizedImageUrl(
-				promo_image_url,
+				original_promo_image_url || promo_image_url,
 				"low",
 				{ w: 430 }
 			)})`;

@@ -190,11 +190,7 @@ class EventUpdate {
 	addTicketType() {
 		//const endDate = this.event.eventDate ? this.event.eventDate : new Date(); //FIXME this will most certainly not work. If a user changes the event date this first ticket type date needs to change.
 		const ticketTypes = this.ticketTypes;
-		const startDate = moment().set({
-			minute: 0,
-			second: 0,
-			millisecond: 0
-		});
+		const startDate = null;
 		const endDate = moment(this.event.eventDate).add(1, "days");
 
 		const ticketType = {
@@ -209,7 +205,7 @@ class EventUpdate {
 			//By default the server will create a Default ticket price point, anything additional added to this array is an override.
 			pricing: [],
 			...updateTimezonesInObjects(
-				{ startDate, startTime: startDate, endDate, endTime: endDate.clone() },
+				{ startDate, startTime: startDate ? startDate.clone() : null, endDate, endTime: endDate.clone() },
 				this.timezone,
 				false
 			),

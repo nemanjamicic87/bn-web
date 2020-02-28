@@ -26,6 +26,8 @@ import pages.components.admin.orders.manage.tickets.OrderTicketsDetails.PerOrder
 import pages.components.admin.orders.manage.tickets.TicketRow;
 import pages.components.dialogs.IssueRefundDialog;
 import pages.components.dialogs.IssueRefundDialog.RefundReason;
+import pages.components.dialogs.RefundOverrideDialog;
+import pages.components.dialogs.RefundSuccessfulDialog;
 import test.facade.BaseFacadeSteps;
 import utils.MsgConstants;
 import utils.ProjectUtils;
@@ -51,7 +53,7 @@ public class OrderManageFacade extends BaseFacadeSteps{
 		whenUserExpandOrderDetailsAndCheckIfExpanded();
 		if (isFullRefund) {
 			whenUserSelectsAllTicketsForRefund();
-			whenUserClicksOnOrderFeeCheckBox();
+			whenUserClicksOnOrderFeeCheckBox(true, true);
 			thenRefundButtonShouldBeVisible();
 			whenUserClicksOnRefundButton();
 		} else {
@@ -74,25 +76,38 @@ public class OrderManageFacade extends BaseFacadeSteps{
 		whenUserClicksOnRefundButton();
 	}
 
-	public void whenUserClicksOnOrderFeeCheckBox() {
+	public boolean whenUserClicksOnOrderFeeCheckBox(boolean checkEventFee, boolean checkCardFee) {
 		SelectedOrderPage selectedOrderPage = (SelectedOrderPage) getData(SELECTED_ORDER_PAGE_KEY);
 		PerOrderFeeComponent perOrderFee = selectedOrderPage.getOrderDetails().getPerOrderFee();
-		perOrderFee.clickOnCheckBoxes();
-		if (perOrderFee.isEntirePerOrderFeeChecked()) {
-			addAmountToTotalRefundAmount(perOrderFee.getMoneyAmount());
+		perOrderFee.clickOnCheckBoxes(checkEventFee, checkCardFee);
+		boolean ok = false;
+		if (checkEventFee && checkCardFee && perOrderFee.isEntirePerOrderFeeChecked()) {
+			ok = true;
+		} else if (checkEventFee && perOrderFee.isEventFeeChecked()) {
+			ok = true;
+		} else if (checkCardFee && perOrderFee.isCreditCardFeeChecked()) {
+			ok = true;
+		} 
+		if (ok) {
+			addAmountToTotalRefundAmount(perOrderFee.getMoneyAmount(checkEventFee, checkCardFee));
+			return true;
 		}
+		return false;
+		
+		
 	}
-
+	
 	public void whenUserSelectsAllTicketsForRefund() {
 		SelectedOrderPage selectedOrderPage = (SelectedOrderPage) getData(SELECTED_ORDER_PAGE_KEY);
 		BigDecimal ticketsTotal = selectedOrderPage.selectAllTicketRowsForRefundGetFeeSum();
 		addAmountToTotalRefundAmount(ticketsTotal);
 	}
 
-	public void whenUserSelectsRefundedStatusTicketForRefund() {
+	public boolean whenUserSelectsRefundedStatusTicketForRefundAndCheckBoxStatus() {
 		SelectedOrderPage selectedOrderPage = (SelectedOrderPage) getData(SELECTED_ORDER_PAGE_KEY);
 		TicketRow row = selectedOrderPage.findTicketRow(ticket -> ticket.isTicketRefunded());
 		row.clickOnCheckoutBoxInTicket();
+		return row.isChecked();
 	}
 
 	public void whenUserSelectsPurchasedStatusTicketForRefund() {
@@ -151,6 +166,8 @@ public class OrderManageFacade extends BaseFacadeSteps{
 
 	public boolean thenStatusOnAllTicketShouldBeRefunded() {
 		SelectedOrderPage selectedOrderPage = (SelectedOrderPage) getData(SELECTED_ORDER_PAGE_KEY);
+		driver.navigate().refresh();
+		whenUserExpandOrderDetailsAndCheckIfExpanded();
 		List<TicketRow> allTickets = selectedOrderPage.getOrderDetails().findAllTicketRows();
 		return allTickets.stream().allMatch(ticket -> ticket.isTicketRefunded());
 	}
@@ -179,6 +196,24 @@ public class OrderManageFacade extends BaseFacadeSteps{
 		IssueRefundDialog refundDialog = (IssueRefundDialog) getData(ISSUE_REFUND_DIALOG_KEY);
 		refundDialog.selectRefundReason(refundReason);
 		refundDialog.clickOnContinue();
+	}
+	
+	public void whenUserSelectRefundReasonAndClickOnOverride(RefundReason refundReason) {
+		IssueRefundDialog refundDialog = (IssueRefundDialog) getData(ISSUE_REFUND_DIALOG_KEY);
+		refundDialog.selectRefundReason(refundReason);
+		refundDialog.clickOnRefundOveride();
+	}
+	
+	public void refundOverrideSteps(SoftAssert sa, RefundReason reason) {
+		whenUserClicksOnRefundButton();
+		Assert.assertTrue(thenRefundDialogShouldBeVisible(), "Refund dialog not visible");
+		sa.assertTrue(thenRefundTotalOnRefundDialogShouldBeCorrect(), "Refund total does not equal sum: " + getData(TOTAL_REFUND_AMOUNT_KEY));
+		whenUserSelectRefundReasonAndClickOnOverride(reason);
+		RefundOverrideDialog refundOverrideDialog = new RefundOverrideDialog(driver);
+		Assert.assertTrue(refundOverrideDialog.isVisible(), "Refund Overrider dialog not visible");
+		refundOverrideDialog.clickOnConfirmButton();
+		RefundSuccessfulDialog refundSuccessfulDialog = new RefundSuccessfulDialog(driver);
+		refundSuccessfulDialog.clickOnGotIt();
 	}
 
 	public void whenUserClicksOnGotItButtonOnRefundSuccessDialog() {
@@ -269,6 +304,18 @@ public class OrderManageFacade extends BaseFacadeSteps{
 		}
 		softAssert.assertAll();
 		
+	}
+	
+	public boolean thenOrderFeesAreChecked(boolean checkEventFee, boolean checkCreditCardFee) {
+		SelectedOrderPage selectedOrderPage = (SelectedOrderPage) getData(SELECTED_ORDER_PAGE_KEY);
+		boolean retVal = true;
+		if (checkEventFee) {
+			retVal = retVal && selectedOrderPage.getOrderDetails().getPerOrderFee().isEventFeeChecked();
+		}
+		if (checkCreditCardFee) {
+			retVal = retVal && selectedOrderPage.getOrderDetails().getPerOrderFee().isCreditCardFeeChecked();
+		}
+		return retVal;
 	}
 	
 	public boolean thenOrderFeeCheckboxShouldBeChecked() {

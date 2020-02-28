@@ -4,7 +4,6 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import model.CreditCard;
 import model.Event;
 import model.Purchase;
 import model.User;
@@ -36,14 +35,12 @@ public class RefundEntireOrderExcludingOrderFeeStepsIT extends TemplateRefundFee
 		
 		boolean isStatusOfTicketRefunded = getOrderManageFacade().thenStatusOnAllTicketShouldBeRefunded();
 		Assert.assertTrue(isStatusOfTicketRefunded, "Not all tickets status is refunded");
-		getOrderManageFacade().whenUserSelectsRefundedStatusTicketForRefund();
+		boolean isTicketChecked = getOrderManageFacade().whenUserSelectsRefundedStatusTicketForRefundAndCheckBoxStatus();
 		
-		boolean isRefundButtonVisible = getOrderManageFacade().thenRefundButtonShouldBeVisible();
-//		Assert.assertFalse(isRefundButtonVisible,
-//				"Refund button on per order fee after already refunded should not be visible");
 		
 		boolean isRefundTotalCorrect = getOrderManageFacade().thenTotalOrderRefundShouldBeCorrect();
 		Assert.assertTrue(isRefundTotalCorrect);
+		Assert.assertFalse(isTicketChecked, "Refunded ticket checkbox should not be checked");
 		
 	}
 	

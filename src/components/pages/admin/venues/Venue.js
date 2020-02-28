@@ -1,4 +1,3 @@
-//testing netlify
 import React, { Component } from "react";
 import { Typography, withStyles } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
@@ -19,20 +18,7 @@ import removePhoneFormatting from "../../../../helpers/removePhoneFormatting";
 import cloudinaryWidget from "../../../../helpers/cloudinaryWidget";
 import Settings from "../../../../config/settings";
 import user from "../../../../stores/user";
-
-const styles = theme => ({
-	paper: {
-		padding: theme.spacing.unit,
-		marginBottom: theme.spacing.unit
-	},
-	venueImage: {
-		width: "100%",
-		height: 300,
-		backgroundRepeat: "no-repeat",
-		backgroundSize: "50% 50%",
-		borderRadius: theme.shape.borderRadius
-	}
-});
+import VenueOrganizationList from "./VenueOrganizationList";
 
 class Venue extends Component {
 	constructor(props) {
@@ -63,116 +49,50 @@ class Venue extends Component {
 			showManualEntry: false,
 			regionOptions: null,
 			regionId: "none",
-			states: []
+			states: [],
+			venueOrganizations: [],
+			existingVenueOrgLinks: []
 		};
+		this.removeOrgFromList = this.removeOrgFromList.bind(this);
 	}
 
 	componentDidMount() {
 		const { venueId } = this.state;
+		this.loadOrgs().then(() => {
+			if (venueId) {
+				this.loadVenue(venueId);
+				this.loadVenueOrgLinks(venueId);
+			}
 
-		if (venueId) {
-			Bigneon()
-				.venues.read({ id: venueId })
-				.then(response => {
-					const {
-						name,
-						address,
-						city,
-						country,
-						state,
-						postal_code,
-						phone,
-						region_id,
-						promo_image_url,
-						timezone
-					} = response.data;
+			this.loadRegions();
 
-					this.setState({
-						name: name || "",
-						address: address || "",
-						city: city || "",
-						country: country || "",
-						state: state || "",
-						postal_code: postal_code || "",
-						phone: phone || "",
-						regionId: region_id || "none",
-						imageUrl: promo_image_url,
-						timezone: timezone || moment.tz.guess()
-					});
-				})
-				.catch(error => {
-					console.error(error);
-					this.setState({ isSubmitting: false });
-
-					notifications.showFromErrorResponse({
-						defaultMessage: "Loading venue details failed.",
-						error
-					});
-				});
-		}
-
-		Bigneon()
-			.regions.index()
-			.then(response => {
-				const { data, paging } = response.data; //@TODO Implement pagination
-
-				const regionOptions = [{ value: "none", label: "No Region" }].concat(
-					data.map(r => ({
-						value: r.id,
-						label: r.name
-					}))
-				);
-
-				this.setState({ regionOptions });
-			})
-			.catch(error => {
-				console.error(error);
-				notifications.showFromErrorResponse({
-					defaultMessage: "Loading regions failed.",
-					error
-				});
-			});
-		Bigneon()
-			.organizations.index()
-			.then(response => {
-				const { data, paging } = response.data; //@TODO Implement pagination
-				this.setState({ organizations: data });
-			})
-			.catch(error => {
-				console.error(error);
-
-				notifications.showFromErrorResponse({
-					defaultMessage: "Loading organizations failed.",
-					error
-				});
-			});
-
-		fetch(Settings().webUrl + "/countries.json")
-			.then(response => response.json())
-			.then(
-				(result) => {
-					const states = [];
-					result.forEach(country => {
-						if (country.name === "United States") {
-							Object.keys(country.province_codes).forEach(code => {
-								states.push({
-									value: country.province_codes[code],
-									label: code + " (" + country.province_codes[code] + ")"
+			fetch(Settings().webUrl + "/countries.json")
+				.then(response => response.json())
+				.then(
+					result => {
+						const states = [];
+						result.forEach(country => {
+							if (country.name === "United States") {
+								Object.keys(country.province_codes).forEach(code => {
+									states.push({
+										value: country.province_codes[code],
+										label: code + " (" + country.province_codes[code] + ")"
+									});
 								});
-							});
-						}
-					});
-					this.setState({ states });
-				},
-				(error) => {
-					console.error(error);
+							}
+						});
+						this.setState({ states });
+					},
+					error => {
+						console.error(error);
 
-					notifications.showFromErrorResponse({
-						defaultMessage: "Loading states failed.",
-						error
-					});
-				}
-			);
+						notifications.showFromErrorResponse({
+							defaultMessage: "Loading states failed.",
+							error
+						});
+					}
+				);
+		});
 	}
 
 	uploadWidget() {
@@ -199,62 +119,215 @@ class Venue extends Component {
 		);
 	}
 
-	createNewVenue(params, onSuccess) {
+	loadVenue(venueId) {
 		Bigneon()
-			.venues.create(params)
+			.venues.read({ id: venueId })
 			.then(response => {
-				const { id } = response.data;
-				onSuccess(id);
+				const {
+					name,
+					address,
+					city,
+					country,
+					state,
+					postal_code,
+					phone,
+					region_id,
+					promo_image_url,
+					timezone
+				} = response.data;
+
+				this.setState({
+					name: name || "",
+					address: address || "",
+					city: city || "",
+					country: country || "",
+					state: state || "",
+					postal_code: postal_code || "",
+					phone: phone || "",
+					regionId: region_id || "none",
+					imageUrl: promo_image_url,
+					timezone: timezone || moment.tz.guess()
+				});
 			})
 			.catch(error => {
 				console.error(error);
 				this.setState({ isSubmitting: false });
 
-				let message = "Create venue failed.";
-				if (
-					error.response &&
-					error.response.data &&
-					error.response.data.error
-				) {
-					message = error.response.data.error;
-				}
-
-				notifications.show({
-					message,
-					variant: "error"
+				notifications.showFromErrorResponse({
+					defaultMessage: "Loading venue details failed.",
+					error
 				});
 			});
 	}
 
-	updateVenue(id, params, onSuccess) {
+	loadVenueOrgLinks(venueId) {
+		const { organizations } = this.state;
 		Bigneon()
-			.venues.update({ ...params, id })
-			.then(() => {
-				onSuccess(id);
+			.venues.orgVenues.index({ id: venueId })
+			.then(response => {
+				const { data } = response.data;
+				data.forEach(link => {
+					link.name = this.findOrgById(
+						link.organization_id,
+						organizations
+					).name;
+				});
+				this.setState({
+					venueOrganizations: [...data],
+					existingVenueOrgLinks: [...data]
+				});
 			})
 			.catch(error => {
 				console.error(error);
-				this.setState({ isSubmitting: false });
-
-				let message = "Update venue failed.";
-				if (
-					error.response &&
-					error.response.data &&
-					error.response.data.error
-				) {
-					message = error.response.data.error;
-				}
-
-				notifications.show({
-					message,
-					variant: "error"
+				notifications.showFromErrorResponse({
+					defaultMessage: "Loading org/venue links failed.",
+					error
 				});
 			});
+	}
+
+	loadRegions() {
+		Bigneon()
+			.regions.index()
+			.then(response => {
+				const { data, paging } = response.data; //@TODO Implement pagination
+
+				const regionOptions = [{ value: "none", label: "No Region" }].concat(
+					data.map(r => ({
+						value: r.id,
+						label: r.name
+					}))
+				);
+
+				this.setState({ regionOptions });
+			})
+			.catch(error => {
+				console.error(error);
+				notifications.showFromErrorResponse({
+					defaultMessage: "Loading regions failed.",
+					error
+				});
+			});
+	}
+
+	loadOrgs() {
+		return Bigneon()
+			.organizations.index()
+			.then(response => {
+				const { data } = response.data;
+				this.setState({ organizations: data });
+			})
+			.catch(error => {
+				console.error(error);
+				notifications.showFromErrorResponse({
+					defaultMessage: "Loading organizations failed.",
+					error
+				});
+			});
+	}
+
+	async createVenueOrgLink(params) {
+		try {
+			await Bigneon().venues.orgVenues.create(params);
+		} catch (e) {
+			console.error(e);
+			notifications.showFromErrorResponse({
+				defaultMessage: "Venue/Org link failed.",
+				e
+			});
+		}
+	}
+
+	async createNewVenue(params, onSuccess) {
+		const { venueOrganizations } = this.state;
+		this.setState({ isSubmitting: true });
+
+		try {
+			const {
+				data: { id }
+			} = await Bigneon().venues.create(params);
+			if (venueOrganizations) {
+				venueOrganizations.forEach(org => {
+					// Venue org is automatically linked
+					if (org.id !== params.organization_id) {
+						this.createVenueOrgLink({
+							venue_id: id,
+							organization_id: org.organization_id
+						});
+					}
+				});
+				this.setState({ isSubmitting: false });
+				onSuccess(id);
+			}
+		} catch (e) {
+			console.error(e);
+			this.setState({ isSubmitting: false });
+			notifications.showFromErrorResponse({
+				defaultMessage: "Create venue failed.",
+				e
+			});
+		}
+	}
+
+	async deleteVenueOrgLink(id) {
+		try {
+			await Bigneon().organizationVenues.del({ id });
+		} catch (e) {
+			console.error(e);
+			notifications.showFromErrorResponse({
+				defaultMessage: "Deleting venue/org link failed.",
+				e
+			});
+		}
+	}
+
+	async updateVenue(id, params, onSuccess) {
+		const { venueOrganizations, existingVenueOrgLinks } = this.state;
+		this.setState({ isSubmitting: true });
+		try {
+			await Bigneon().venues.update({ ...params, id });
+			// Create missing ones
+			const toInsert = venueOrganizations.filter(
+				x =>
+					!existingVenueOrgLinks.find(
+						newOrg => newOrg.organization_id === x.organization_id
+					)
+			);
+			await Promise.all(
+				toInsert.map(org => {
+					return this.createVenueOrgLink({
+						venue_id: id,
+						organization_id: org.organization_id
+					});
+				})
+			);
+			// Delete
+			// Find orgs that are in existing that are no longer present
+			const toDelete = existingVenueOrgLinks.filter(
+				link =>
+					!venueOrganizations.find(
+						newOrg => newOrg.organization_id === link.organization_id
+					)
+			);
+			await Promise.all(
+				toDelete.map(link => {
+					return this.deleteVenueOrgLink(link.id);
+				})
+			);
+			this.setState({ isSubmitting: false });
+			onSuccess(id);
+		} catch (error) {
+			console.error(error);
+			this.setState({ isSubmitting: false });
+			notifications.showFromErrorResponse({
+				defaultMessage: "Update venue failed.",
+				error
+			});
+		}
 	}
 
 	onSubmit(e) {
 		e.preventDefault();
-
 		this.submitAttempted = true;
 
 		if (!this.validateFields()) {
@@ -266,7 +339,6 @@ class Venue extends Component {
 			venueId,
 			regionId,
 			name,
-			organizationId,
 			phone,
 			address,
 			city,
@@ -310,39 +382,103 @@ class Venue extends Component {
 			return;
 		}
 
-		this.createNewVenue(
-			{ ...venueDetails, organization_id: organizationId },
-			id => {
-				notifications.show({
-					message: "Venue created",
-					variant: "success"
-				});
+		this.createNewVenue({ ...venueDetails, organization_ids: [] }, id => {
+			notifications.show({
+				message: "Venue created",
+				variant: "success"
+			});
 
-				this.props.history.push("/admin/venues");
-			}
-		);
+			this.props.history.push("/admin/venues");
+		});
+	}
+
+	addOrganizationToVenue(id) {
+		const { venueOrganizations, organizations } = this.state;
+		const orgs = venueOrganizations;
+		if (id) {
+			const selectedOrg = this.findOrgById(id, organizations);
+			if (
+				!orgs.find(org => org.id === selectedOrg.id) &&
+				!orgs.find(org => org.organization_id === selectedOrg.id)
+			)
+				orgs.push({ organization_id: selectedOrg.id, ...selectedOrg });
+		}
+		this.setState({ venueOrganizations: orgs });
+		return orgs;
+	}
+
+	findOrgById(id, organizations) {
+		return organizations.find(org => org.id === id);
+	}
+
+	removeOrgFromList(id) {
+		const { venueOrganizations } = this.state;
+		const orgs = venueOrganizations;
+		let newOrgs = [];
+		if (id) {
+			newOrgs = orgs.filter(org => org.id !== id);
+		}
+		this.setState({ venueOrganizations: newOrgs });
+		return newOrgs;
 	}
 
 	renderOrganizations() {
-		const { organizationId, organizations, errors } = this.state;
+		const {
+			organizationId,
+			organizations,
+			errors,
+			venueOrganizations
+		} = this.state;
+		const { classes } = this.props;
 		if (organizations === null) {
 			return <Typography variant="body1">Loading organizations...</Typography>;
 		}
 
-		const organizationOptions = organizations.map(organization => ({
-			value: organization.id,
-			label: organization.name
-		}));
+		const organizationOptions = organizations
+			.filter(
+				organization =>
+					!venueOrganizations.find(
+						org => org.organization_id === organization.id
+					)
+			)
+			.map(organization => ({
+				value: organization.id,
+				label: organization.name
+			}));
 
 		return (
-			<SelectGroup
-				value={organizationId}
-				items={organizationOptions}
-				error={errors.organizationId}
-				name={"organization"}
-				label={"Organization *"}
-				onChange={e => this.setState({ organizationId: e.target.value })}
-			/>
+			<div>
+				<SelectGroup
+					value={organizationId}
+					items={organizationOptions}
+					error={errors.organizationId}
+					name={"organization"}
+					label={"Organization *"}
+					onChange={e => {
+						this.setState({ organizationId: e.target.value });
+						this.addOrganizationToVenue(e.target.value);
+					}}
+				/>
+				<div>
+					{venueOrganizations && venueOrganizations.length > 0 ? (
+						<div>
+							<Typography>Linked Organizations:</Typography>
+							<div className={classes.orgContainer}>
+								{venueOrganizations.map((org, index) => {
+									return (
+										<VenueOrganizationList
+											key={index}
+											classes={classes}
+											organization={org}
+											removeOrg={this.removeOrgFromList}
+										/>
+									);
+								})}
+							</div>
+						</div>
+					) : null}
+				</div>
+			</div>
 		);
 	}
 
@@ -405,7 +541,7 @@ class Venue extends Component {
 			return null;
 		}
 
-		const { organizationId, venueId } = this.state;
+		const { venueOrganizations, venueId, organizationId } = this.state;
 		const phone = removePhoneFormatting(this.state.phone);
 
 		const errors = {};
@@ -425,12 +561,12 @@ class Venue extends Component {
 		});
 
 		if (!venueId) {
-			if (!organizationId) {
+			if (venueOrganizations.length < 1 || !organizationId) {
 				errors.organizationId = "Select an organization.";
 			}
 		}
 
-		if(phone){
+		if (phone) {
 			if (!validPhone(phone)) {
 				errors.phone = "Invalid phone number.";
 			}
@@ -452,7 +588,8 @@ class Venue extends Component {
 			address = "",
 			city = "",
 			postal_code = "",
-			country = ""
+			country = "",
+			venueOrganizations
 		} = this.state;
 
 		const { classes } = this.props;
@@ -472,17 +609,20 @@ class Venue extends Component {
 								onSubmit={this.onSubmit.bind(this)}
 							>
 								<CardContent>
-									<CardMedia
-										className={classes.venueImage}
-										image={imageUrl || "/icons/venues-gray.svg"}
-										title={name}
-									/>
-									<Button
-										style={{ width: "100%" }}
-										onClick={this.uploadWidget.bind(this)}
-									>
-										Upload image
-									</Button>
+									<div className={classes.addImgContainer}>
+										<CardMedia
+											className={classes.venueImage}
+											image={imageUrl || "/icons/venues-gray.svg"}
+											title={name}
+										/>
+										<Button
+											style={{ width: "100%" }}
+											variant={"callToAction"}
+											onClick={this.uploadWidget.bind(this)}
+										>
+											Upload image
+										</Button>
+									</div>
 
 									<InputGroup
 										error={errors.name}
@@ -493,7 +633,7 @@ class Venue extends Component {
 										onChange={e => this.setState({ name: e.target.value })}
 										onBlur={this.validateFields.bind(this)}
 									/>
-									{!venueId ? this.renderOrganizations() : null}
+									{this.renderOrganizations()}
 									{this.renderTimezones()}
 									{this.renderRegions()}
 									<InputGroup
@@ -536,7 +676,9 @@ class Venue extends Component {
 												name="postal_code"
 												label="Zip *"
 												type="text"
-												onChange={e => this.setState({ postal_code: e.target.value })}
+												onChange={e =>
+													this.setState({ postal_code: e.target.value })
+												}
 												onBlur={this.validateFields.bind(this)}
 											/>
 										</Grid>
@@ -547,7 +689,9 @@ class Venue extends Component {
 												name="country"
 												label="Country *"
 												type="text"
-												onChange={e => this.setState({ country: e.target.value })}
+												onChange={e =>
+													this.setState({ country: e.target.value })
+												}
 												onBlur={this.validateFields.bind(this)}
 												disabled={!user.isSuper}
 											/>
@@ -563,8 +707,8 @@ class Venue extends Component {
 									>
 										{isSubmitting
 											? venueId
-												? "Creating..."
-												: "Updating..."
+												? "Updating..."
+												: "Creating..."
 											: venueId
 												? "Update"
 												: "Create"}
@@ -578,5 +722,45 @@ class Venue extends Component {
 		);
 	}
 }
+
+const styles = theme => ({
+	paper: {
+		padding: theme.spacing.unit,
+		marginBottom: theme.spacing.unit
+	},
+	venueImage: {
+		width: "100%",
+		height: 300,
+		backgroundRepeat: "no-repeat",
+		backgroundSize: "50% 50%",
+		borderRadius: theme.shape.borderRadius
+	},
+	orgRow: {
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		justifyItems: "center"
+	},
+	addImgContainer: {
+		marginBottom: theme.spacing.unit * 4
+	},
+	removeOrgIcon: {
+		maxWidth: 14,
+		cursor: "pointer"
+	},
+	orgContainer: {
+		marginBottom: theme.spacing.unit * 2,
+		marginTop: theme.spacing.unit,
+		border: "1px solid #eaeaea",
+		borderRadius: 5,
+		padding: 8
+	},
+	orgName: {
+		fontSize: 16,
+		lineHeight: "18px",
+		color: "#9DA3B4"
+	}
+});
 
 export default withStyles(styles)(Venue);

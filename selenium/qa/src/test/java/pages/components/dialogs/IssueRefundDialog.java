@@ -8,7 +8,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
 import pages.components.GenericDropDown;
-import utils.SeleniumUtils;
 
 public class IssueRefundDialog extends DialogContainerComponent {
 
@@ -82,13 +81,17 @@ public class IssueRefundDialog extends DialogContainerComponent {
 	}
 	
 	public void clickOnCancel() {
-		explicitWaitForVisibilityAndClickableWithClick(cancelButton);
+		clickOnButtonWithLabel("Cancel");
 	}
 
 	public void clickOnContinue() {
 		waitForTime(1500);
-		explicitWaitForVisibilityAndClickableWithClick(confirmButton);
+		clickOnButtonWithLabel("Confirm");
 		waitForTime(1500);
+	}
+	
+	public void clickOnRefundOveride() {
+		clickOnButtonWithLabel("Refund Override");
 	}
 
 	public void clickOnGotItButton() {

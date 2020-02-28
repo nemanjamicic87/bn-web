@@ -36,18 +36,10 @@ const formatValueFunctions = {
 	"PageViews.source": (row, classes, totalUniquePageViews) => {
 		const val = row["PageViews.source"];
 
-		if (!val || val.toLowerCase() == "direct") {
-			return "Big Neon";
-		}
-
 		return upperFirstChar(val);
 	},
 	"PageViews.medium": (row, classes, totalUniquePageViews) => {
 		const val = row["PageViews.medium"];
-
-		if (val == "venuewebsite") {
-			return "Venue Website";
-		}
 
 		return upperFirstChar(val);
 	},
@@ -67,7 +59,7 @@ const TableRender = ({ resultSet, classes, salesSourceUnavailableMessage }) => {
 	});
 
 	return (
-		<div>
+		<div className={classes.pageViewsTable}>
 			<PageViewsRow heading>
 				{resultSet.tableColumns().map(c => columnHeadingMap[c.key] || c.title)}
 			</PageViewsRow>
@@ -132,6 +124,11 @@ const styles = theme => {
 		percentText: {
 			fontSize: 12,
 			color: "#9DA3B4"
+		},
+		pageViewsTable: {
+			[theme.breakpoints.down("xs")]: {
+				minWidth: "200vw"
+			}
 		}
 	};
 };

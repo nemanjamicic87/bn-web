@@ -1,8 +1,10 @@
 package pages.admin.events;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.InvalidArgumentException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -16,6 +18,7 @@ import pages.components.TimeMenuDropDown;
 import pages.components.admin.events.AddTicketTypeComponent;
 import utils.Constants;
 import utils.MsgConstants;
+import utils.ProjectUtils;
 import utils.SeleniumUtils;
 
 public class CreateEventPage extends BasePage {
@@ -99,10 +102,6 @@ public class CreateEventPage extends BasePage {
 
 	}
 
-	public void clickOnImportSettingDialogNoThanks() {
-		waitVisibilityAndClick(dissmisImportSettingDialog);
-	}
-
 	public void uploadImage(String imageLink) {
 		clickOnUploadImage();
 		explicitWait(15, ExpectedConditions.frameToBeAvailableAndSwitchToIt(imageUploadIframe));
@@ -138,6 +137,11 @@ public class CreateEventPage extends BasePage {
 		waitForTime(1000);
 		selectDoorTime(doorTime);
 
+	}
+	
+	public void enterDates(LocalDate startDate, LocalDate endDate) {
+		enterDate(startDateField, ProjectUtils.formatDate(ProjectUtils.DATE_FORMAT, startDate));
+		enterDate(endDateField, ProjectUtils.formatDate(ProjectUtils.DATE_FORMAT, endDate));
 	}
 
 	public void enterArtistName(String artistName) {
@@ -199,6 +203,25 @@ public class CreateEventPage extends BasePage {
 
 	public boolean checkSaveDraftMessage() {
 		return isNotificationDisplayedWithMessage(MsgConstants.EVENT_SAVED_TO_DRAFT);
+	}
+	
+	public LocalDate getStartDateValue() {
+		String startDateStr = getAccessUtils().getValue(startDateField);
+		return getDate(startDateStr);
+	}
+	
+	public LocalDate getEndDateValue() {
+		String endDateStr = getAccessUtils().getValue(endDateField);
+		return getDate(endDateStr);
+		
+	}
+	
+	private LocalDate getDate(String dateStr) {
+		if (dateStr == null || dateStr.isEmpty()) {
+			throw new InvalidArgumentException("Value passed to getDate in " + getClass().getName() + " is invalid: " + dateStr);
+		}
+		LocalDate retVal = ProjectUtils.parseDate(ProjectUtils.DATE_FORMAT, dateStr);
+		return retVal;
 	}
 
 	private void clickOnUploadImage() {

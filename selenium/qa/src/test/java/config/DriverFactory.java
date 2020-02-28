@@ -32,8 +32,8 @@ public class DriverFactory {
                     manager = new RemoteDriverManager(URL, config, environment);
                     break;
                 case HUB:
-                    System.out.println("Remote hub");
                     String huburl = System.getProperty("huburl");
+					System.out.println("Remote hub: " + huburl);
                     String configFileName = System.getProperty("config");
                     manager = new HubRemoteDriverManager(huburl, configFileName, environment);
                     break;
@@ -54,13 +54,13 @@ public class DriverFactory {
 
     public static String getAccessKey() {
         return System.getProperty("key");
-    }			
-	
+    }
+
 	public static EnvironmentEnum getEnvironmentEnum() {
 		String environment = System.getProperty("baseurl");
 		return EnvironmentEnum.getEnvironmentEnum(environment);
 	}
-	
+
 	public static BrowsersEnum getBrowser() {
 		String code = System.getProperty("browser");
 		return BrowsersEnum.getEnumForCode(code);

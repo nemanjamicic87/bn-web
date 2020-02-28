@@ -110,6 +110,7 @@ public class SeleniumUtils {
 
 	public static WebElement getChildElementFromParentLocatedBy(WebElement parent, By relativeChildBy, int seconds,
 			WebDriver driver) {
+		new WebDriverWait(driver, seconds).until(ExpectedConditions.visibilityOf(parent));
 		WebElement element = new WebDriverWait(driver, seconds)
 				.until(ExpectedConditions.visibilityOf(parent.findElement(relativeChildBy)));
 		return element;
@@ -117,6 +118,7 @@ public class SeleniumUtils {
 
 	public static List<WebElement> getChildElementsFromParentLocatedBy(WebElement parent, By relativeChildBy,
 			WebDriver driver) {
+		new WebDriverWait(driver, 15).until(ExpectedConditions.visibilityOf(parent));
 		List<WebElement> elements = new WebDriverWait(driver, 15)
 				.until(ExpectedConditions.visibilityOfAllElements(parent.findElements(relativeChildBy)));
 		return elements;

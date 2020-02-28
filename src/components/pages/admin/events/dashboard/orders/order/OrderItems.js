@@ -28,6 +28,8 @@ import user from "../../../../../../../stores/user";
 import RefundBottomBar from "./RefundBottomBar";
 import Divider from "../../../../../../common/Divider";
 import MobileTicketCard from "./MobileTicketCard";
+import moment from "moment-timezone";
+import { TIME_FORMAT_MM_DD_YYYY_WITH_TIMEZONE } from "../../../../../../../helpers/time";
 
 const styles = theme => ({
 	root: {
@@ -187,8 +189,8 @@ class OrderItems extends Component {
 		this.props.refreshOrder();
 	}
 
-	onRefundOverrideDialogOpen() {
-		this.setState({ showRefundOverrideType: "items" });
+	onRefundOverrideDialogOpen(showRefundOverrideType) {
+		this.setState({ showRefundOverrideType });
 	}
 
 	onRefundOverrideDialogClose() {
@@ -368,7 +370,8 @@ class OrderItems extends Component {
 			order,
 			items,
 			toggleMobileTicketsView,
-			showMobileTicketsView
+			showMobileTicketsView,
+			timezone
 		} = this.props;
 
 		const {
@@ -383,9 +386,10 @@ class OrderItems extends Component {
 		const {
 			name: eventName,
 			venue,
-			displayDate: eventDisplayDate
+			event_start
 		} = eventDetails;
 
+		const eventDisplayDate = moment.utc(event_start).tz(timezone).format(TIME_FORMAT_MM_DD_YYYY_WITH_TIMEZONE);
 		let code = "";
 		let codeType = "";
 		let qty = 0;
@@ -674,7 +678,8 @@ OrderItems.propTypes = {
 	order: PropTypes.object.isRequired,
 	refreshOrder: PropTypes.func.isRequired,
 	toggleMobileTicketsView: PropTypes.func.isRequired,
-	showMobileTicketsView: PropTypes.bool.isRequired
+	showMobileTicketsView: PropTypes.bool.isRequired,
+	timezone: PropTypes.string.isRequired
 };
 
 export default withStyles(styles)(OrderItems);

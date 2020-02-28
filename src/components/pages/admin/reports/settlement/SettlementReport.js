@@ -20,6 +20,7 @@ import splitByCamelCase from "../../../../../helpers/splitByCamelCase";
 import downloadCSV from "../../../../../helpers/downloadCSV";
 import { dollars } from "../../../../../helpers/money";
 import user from "../../../../../stores/user";
+import DeleteDialog from "./DeleteDialog";
 
 const statusEnums = Bn.Enums.SETTLEMENT_STATUS;
 const typeEnums = Bn.Enums.ADJUSTMENT_TYPES;
@@ -430,7 +431,7 @@ class SettlementReport extends Component {
 
 				{adjustments && adjustments.length > 0 ? (
 					<React.Fragment>
-						<AdjustmentsList adjustments={adjustments}/> <br/>
+						<AdjustmentsList adjustments={adjustments} refreshAdjustments={this.onAdjustmentAdded.bind(this)}/> <br/>
 						<br/>
 					</React.Fragment>
 				) : null}

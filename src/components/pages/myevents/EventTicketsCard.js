@@ -446,7 +446,8 @@ class EventTicketsCard extends Component {
 			top_line_info,
 			venue,
 			artists,
-			eventDate
+			eventDate,
+			displayShowTime
 		} = event;
 
 		//TODO show artists when added to api
@@ -466,7 +467,7 @@ class EventTicketsCard extends Component {
 								})`
 							}}
 						>
-							<DateFlag date={eventDate}/>
+							{displayShowTime ? <DateFlag date={displayShowTime}/> : null}
 						</div>
 					</Hidden>
 
@@ -509,7 +510,7 @@ class EventTicketsCard extends Component {
 								{!expanded ? (
 									<Typography>
 										<StyledLink onClick={onExpand} underlined>
-											View my tickets
+											View Order
 										</StyledLink>
 									</Typography>
 								) : null}

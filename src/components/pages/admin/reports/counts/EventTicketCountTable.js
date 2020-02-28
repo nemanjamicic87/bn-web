@@ -6,7 +6,11 @@ import { dollars } from "../../../../../helpers/money";
 
 const styles = theme => {
 	return {
-		root: {}
+		root: {
+			[theme.breakpoints.down("xs")]: {
+				minWidth: "200vw"
+			}
+		}
 	};
 };
 
@@ -32,10 +36,10 @@ const EventTicketCountTable = props => {
 				{[
 					"Ticket",
 					"Allocation",
-					"QTY Sold Online",
-					"QTY Sold BO",
-					"Total sold",
-					"Comps",
+					"Sold",
+					"Online",
+					"BO",
+					"Comp",
 					"Holds",
 					"In Cart",
 					"Open",
@@ -66,9 +70,9 @@ const EventTicketCountTable = props => {
 							{[
 								name,
 								totalAllocation,
+								totalSoldCount,
 								totalSoldOnlineCount,
 								totalBoxOfficeCount,
-								totalSoldCount,
 								totalCompsCount,
 								totalHoldsCount,
 								totalReservedCount,
@@ -102,9 +106,9 @@ const EventTicketCountTable = props => {
 											{[
 												rowName,
 												" ",
+												total_sold_count,
 												online_sale_count,
 												box_office_sale_count,
-												total_sold_count,
 												comp_sale_count,
 												" ",
 												" ",
@@ -126,9 +130,9 @@ const EventTicketCountTable = props => {
 				{[
 					"Totals",
 					totalAllocation,
+					totalSoldCount,
 					totalSoldOnlineCount,
 					totalBoxOfficeCount,
-					totalSoldCount,
 					totalCompsCount,
 					totalHoldsCount,
 					totalReservedCount,

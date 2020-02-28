@@ -42,6 +42,16 @@ const styles = theme => {
 				color: "#FFF"
 			}
 		},
+		secondary8border: {
+			background: secondaryHex,
+			color: "#FFF",
+			borderRadius: 8,
+			"&:hover": {
+				background: secondaryHex,
+				opacity: .7,
+				color: "#FFF"
+			}
+		},
 		plainWhite: {
 			boxSizing: " border-box",
 			height: 42,
@@ -215,6 +225,7 @@ CustomButton.propTypes = {
 		"callToAction",
 		"warning",
 		"text",
+		"secondary8border",
 		"additional",
 		"plainWhite",
 		"pinkBorder",

@@ -276,10 +276,10 @@ class EventDashboardContainer extends Component {
 				{/*) : (*/}
 				{/*	<span/>*/}
 				{/*)}*/}
-				{user.isAdmin ? ( //TODO use scope when API is ready
-					<Link to={`/admin/events/${event.id}/hospitality/last-call`}>
+				{user.hasEventAnnouncements ? ( //TODO use scope when API is ready
+					<Link to={`/admin/events/${event.id}/fan-notifications`}>
 						<MenuItem onClick={this.handleToolsMenuClose.bind(this)}>
-							Hospitality
+							Fan Notifications
 						</MenuItem>
 					</Link>
 				) : (
@@ -588,7 +588,7 @@ class EventDashboardContainer extends Component {
 			return <Loader/>;
 		}
 
-		const { id, publish_date, on_sale, localized_times } = event;
+		const { id, publish_date, on_sale, localized_times, status } = event;
 		const isPublished = moment.utc(publish_date).isBefore(moment.utc());
 		const isOnSale = isPublished && moment.utc(on_sale).isBefore(moment.utc());
 
@@ -600,6 +600,8 @@ class EventDashboardContainer extends Component {
 				eventEnded = true;
 			}
 		}
+
+		const publishedDateAfterNowAndNotDraft = moment.utc(publish_date).isAfter(moment.utc()) && status !== "Draft";
 
 		return (
 			<div>
@@ -631,9 +633,17 @@ class EventDashboardContainer extends Component {
 							<div>
 								<ColorTag
 									style={{ marginRight: 10 }}
-									variant={isPublished ? "secondary" : "disabled"}
+									variant={
+										isPublished || publishedDateAfterNowAndNotDraft
+											? "secondary"
+											: "disabled"
+									}
 								>
-									{isPublished ? "Published" : "Draft"}
+									{isPublished
+										? "Published"
+										: publishedDateAfterNowAndNotDraft
+											? "Scheduled"
+											: "Draft"}
 								</ColorTag>
 							</div>
 							<div>
@@ -663,22 +673,12 @@ class EventDashboardContainer extends Component {
 					<div className={classes.menuContainer}>
 						<Typography className={classes.menuText}>
 							<StyledLink
-								underlined={subheading === "summary_old"}
+								underlined={subheading === "summary"}
 								to={`/admin/events/${event.id}/dashboard`}
 							>
 								Dashboard
 							</StyledLink>
 						</Typography>
-						{user.isAdmin ? (
-							<Typography className={classes.menuText}>
-								<StyledLink
-									underlined={subheading === "summary"}
-									to={`/admin/events/${event.id}/dashboard_v2`}
-								>
-									Dashboard V2
-								</StyledLink>
-							</Typography>
-						) : null}
 
 						{!event.is_external ? (
 							<React.Fragment>

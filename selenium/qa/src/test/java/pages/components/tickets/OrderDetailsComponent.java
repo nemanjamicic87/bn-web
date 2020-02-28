@@ -72,6 +72,7 @@ public class OrderDetailsComponent extends BaseComponent implements DataHolderPr
 	}
 	
 	public Event getEventInfo() {
+		explicitWaitForVisiblity(container);
 		WebElement eventName = getAccessUtils().getChildElementFromParentLocatedBy(container, By.xpath(relativeEventNameXpath));
 		WebElement startDate = getAccessUtils().getChildElementFromParentLocatedBy(container, By.xpath(relativeDateTimeXpath));
 		Event event = new Event();
