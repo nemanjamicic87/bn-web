@@ -93,7 +93,7 @@ class AdjustmentsList extends Component {
 									{typeEnums[settlement_adjustment_type]}
 								</span>{" "}
 								- {displayCreatedAt}
-								{status === "Pending" ? (
+								{status === "Pending" && (
 									<IconButton
 										className={classes.icon}
 										onClick={this.onDeleteDialogOpen.bind(this, id)}
@@ -101,7 +101,7 @@ class AdjustmentsList extends Component {
 									>
 										Delete
 									</IconButton>
-								) : null}
+								)}
 							</Typography>
 							<Typography className={classes.text}>
 								Value: {dollars(amount_in_cents)}
