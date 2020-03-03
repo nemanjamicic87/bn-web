@@ -2,38 +2,13 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Bn from "bn-api-node";
 import { Typography, withStyles } from "@material-ui/core";
-import Bigneon from "../../../../../helpers/bigneon";
 import { dollars } from "../../../../../helpers/money";
 import { fontFamilyDemiBold } from "../../../../../config/theme";
 import IconButton from "../../../../elements/IconButton";
 import DeleteDialog from "./DeleteDialog";
-import notifications from "../../../../../stores/notifications";
-
-const styles = theme => ({
-	root: {
-		marginTop: theme.spacing.unit * 2
-	},
-	text: {
-		fontSize: 14
-	},
-	title: {
-		fontFamily: fontFamilyDemiBold,
-		fontSize: 17,
-		textTransform: "capitalize"
-	},
-	itemContainer: {
-		marginTop: theme.spacing.unit
-	},
-	boldText: {
-		fontFamily: fontFamilyDemiBold
-	},
-	icon: {
-		marginLeft: 30,
-		marginBottom: 5
-	}
-});
 
 const typeEnums = Bn.Enums.ADJUSTMENT_TYPES;
+const statusEnums = Bn.Enums.SettlementStatus;
 
 class AdjustmentsList extends Component {
 	constructor(props) {
@@ -93,7 +68,7 @@ class AdjustmentsList extends Component {
 									{typeEnums[settlement_adjustment_type]}
 								</span>{" "}
 								- {displayCreatedAt}
-								{status === "Pending" && (
+								{status === statusEnums.PENDING_SETTLEMENT && (
 									<IconButton
 										className={classes.icon}
 										onClick={this.onDeleteDialogOpen.bind(this, id)}
@@ -117,6 +92,30 @@ class AdjustmentsList extends Component {
 		);
 	}
 }
+
+const styles = theme => ({
+	root: {
+		marginTop: theme.spacing.unit * 2
+	},
+	text: {
+		fontSize: 14
+	},
+	title: {
+		fontFamily: fontFamilyDemiBold,
+		fontSize: 17,
+		textTransform: "capitalize"
+	},
+	itemContainer: {
+		marginTop: theme.spacing.unit
+	},
+	boldText: {
+		fontFamily: fontFamilyDemiBold
+	},
+	icon: {
+		marginLeft: 30,
+		marginBottom: 5
+	}
+});
 
 AdjustmentsList.propTypes = {
 	classes: PropTypes.object.isRequired,
