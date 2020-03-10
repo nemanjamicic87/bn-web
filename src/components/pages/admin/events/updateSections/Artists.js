@@ -78,7 +78,12 @@ class ArtistDetails extends Component {
 
 	componentDidMount() {
 		Bigneon()
-			.artists.index()
+			//This is a hideous hack to get the old functionality back
+			//We are loading all the artists into the dropdown on page load
+			//We should ONLY load the artists linked to this event, and then append new artists
+			//when we search for them
+			//TODO fix this monstrosity
+			.artists.index({ limit: 10000 })
 			.then(response => {
 				const { data, paging } = response.data; //@TODO Implement pagination
 				this.setState({ availableArtists: data });
@@ -422,7 +427,10 @@ class ArtistDetails extends Component {
 						const uniqueFlipKey = eventArtist.id || index;
 
 						return (
-							<LeftAlignedSubCard key={uniqueFlipKey} active={active}>
+							<LeftAlignedSubCard
+								key={uniqueFlipKey}
+								active={active}
+							>
 								<EventArtist
 									socialAccounts={socialAccounts}
 									typeHeading={importance === 0 ? "Headline act *" : "Supporting act"}
