@@ -371,12 +371,13 @@ class EventUpdate {
 	}
 
 	@action
-	addArtist(id) {
+	addArtist(id, artist) {
 		const artists = this.artists;
 		artists.push({
 			id,
 			setTime: null,
-			importance: artists.length === 0 ? 0 : 1
+			importance: artists.length === 0 ? 0 : 1,
+			artist
 		});
 		this.artists = artists;
 	}

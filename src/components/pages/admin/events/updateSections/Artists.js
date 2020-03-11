@@ -70,8 +70,6 @@ class ArtistDetails extends Component {
 			showArtistSelect: false,
 			//These are the current search results for artists
 			availableArtists: null,
-			//These are artists that have been chosen, but not saved
-			pendingArtists: [],
 			spotifyAvailableArtists: null,
 			spotifyArtists: {},
 			isSubmitting: false,
@@ -96,8 +94,8 @@ class ArtistDetails extends Component {
 			});
 	}
 
-	addNewArtist(id) {
-		const { spotifyArtists, pendingArtists, availableArtists } = this.state;
+	addNewArtist(id, artist) {
+		const { spotifyArtists } = this.state;
 
 		if (spotifyArtists.hasOwnProperty(id)) {
 			//Add spotifyArtist
@@ -105,28 +103,24 @@ class ArtistDetails extends Component {
 			return;
 		}
 
-		pendingArtists.push(availableArtists.find(artist => artist.id === id));
-		this.setState({ pendingArtists }, () => {
-			eventUpdateStore.addArtist(id);
+		eventUpdateStore.addArtist(id, artist);
+		if (eventUpdateStore.artists.length === 1) {
+			const { availableArtists } = this.state;
+			const selectedArtist = availableArtists.find(a => a.id === id);
+			if (selectedArtist && selectedArtist.image_url) {
+				if (!eventUpdateStore.event.promoImageUrl) {
+					//Assume the promo image is the headliner artist
+					eventUpdateStore.updateEvent({
+						promoImageUrl: selectedArtist.image_url
+					});
+				}
 
-			if (eventUpdateStore.artists.length === 1) {
-				const { availableArtists } = this.state;
-				const selectedArtist = availableArtists.find(a => a.id === id);
-				if (selectedArtist && selectedArtist.image_url) {
-					if (!eventUpdateStore.event.promoImageUrl) {
-						//Assume the promo image is the headliner artist
-						eventUpdateStore.updateEvent({
-							promoImageUrl: selectedArtist.image_url
-						});
-					}
-
-					//If here's no event name yet, assume the event name to be the headlining artist
-					if (!eventUpdateStore.event.name) {
-						eventUpdateStore.updateEvent({ name: selectedArtist.name });
-					}
+				//If here's no event name yet, assume the event name to be the headlining artist
+				if (!eventUpdateStore.event.name) {
+					eventUpdateStore.updateEvent({ name: selectedArtist.name });
 				}
 			}
-		});
+		}
 
 	}
 
@@ -172,8 +166,8 @@ class ArtistDetails extends Component {
 					return { availableArtists };
 				});
 
-				//Add the
-				this.addNewArtist(id);
+				//Add the artist data
+				this.addNewArtist(id, response.data);
 			})
 			.catch(error => {
 				console.error(error);
@@ -314,7 +308,7 @@ class ArtistDetails extends Component {
 				placeholder={"eg. Childish Gambino"}
 				onChange={artistId => {
 					if (artistId) {
-						this.addNewArtist(artistId);
+						this.addNewArtist(artistId, availableArtists.find(artist => artist.id === artistId));
 						this.setState({ showArtistSelect: false });
 					}
 				}}
@@ -359,15 +353,18 @@ class ArtistDetails extends Component {
 
 	render() {
 		const { classes, errors } = this.props;
-		const { pendingArtists, showArtistSelect } = this.state;
+		const { showArtistSelect } = this.state;
 		const { artists, artistTypeActiveIndex } = eventUpdateStore;
 
 		return (
 			<div>
 				<FlipMove staggerDurationBy="50">
 					{artists.map((eventArtist, index) => {
-						const { id, setTime, importance } = eventArtist;
-						const { artist = pendingArtists.find(i => i.id === id) } = eventArtist;
+						const { setTime, importance } = eventArtist;
+						const { artist } = eventArtist;
+						if (!artist) {
+							return null;
+						}
 
 						const name = artist.name;
 						const thumb_image_url = artist.thumb_image_url || artist.image_url;
