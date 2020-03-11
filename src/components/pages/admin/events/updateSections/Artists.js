@@ -180,7 +180,7 @@ class ArtistDetails extends Component {
 				this.setState({ isSubmitting: false });
 
 				notifications.showFromErrorResponse({
-					defaultMessage: "Creating new artist failed.",
+					defaultMessage: "There was a problem creating your new artist.",
 					error
 				});
 
