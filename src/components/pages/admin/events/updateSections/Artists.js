@@ -132,9 +132,7 @@ class ArtistDetails extends Component {
 
 	onDelete(index) {
 		const { event, artists } = eventUpdateStore;
-		const { availableArtists } = this.state;
-		const id = artists[index].id;
-		const selectedArtist = availableArtists.find(a => a.id === id);
+		const selectedArtist = artists[index].artist;
 		const currentEventPromoUrl = event.promoImageUrl || "";
 
 		//If the event promo image was set by this artist, remove it
