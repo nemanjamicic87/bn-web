@@ -51,7 +51,8 @@ const formatForInput = artistArray => {
 			importance,
 			setTime: set_time
 				? moment.utc(set_time, moment.HTML5_FMT.DATETIME_LOCAL_MS)
-				: null
+				: null,
+			artist
 		};
 	});
 
@@ -66,9 +67,11 @@ class ArtistDetails extends Component {
 		super(props);
 
 		this.state = {
-			artists: props.artists,
 			showArtistSelect: false,
+			//These are the current search results for artists
 			availableArtists: null,
+			//These are artists that have been chosen, but not saved
+			pendingArtists: [],
 			spotifyAvailableArtists: null,
 			spotifyArtists: {},
 			isSubmitting: false,
@@ -77,38 +80,24 @@ class ArtistDetails extends Component {
 	}
 
 	componentDidMount() {
+		//Load some initial artists
 		Bigneon()
-			//This is a hideous hack to get the old functionality back
-			//We are loading all the artists into the dropdown on page load
-			//We should ONLY load the artists linked to this event, and then append new artists
-			//when we search for them
-			//TODO fix this monstrosity
-			.artists.index({ limit: 10000 })
+			.artists.index()
 			.then(response => {
-				const { data, paging } = response.data; //@TODO Implement pagination
+				const { data } = response.data;
 				this.setState({ availableArtists: data });
 			})
 			.catch(error => {
 				console.error(error);
-
-				let message = "Loading artists failed.";
-				if (
-					error.response &&
-					error.response.data &&
-					error.response.data.error
-				) {
-					message = error.response.data.error;
-				}
-
-				notifications.show({
-					message,
-					variant: "error"
+				notifications.showFromErrorResponse({
+					error,
+					defaultMessage: "There was a problem loading the artists"
 				});
 			});
 	}
 
 	addNewArtist(id) {
-		const { spotifyArtists } = this.state;
+		const { spotifyArtists, pendingArtists, availableArtists } = this.state;
 
 		if (spotifyArtists.hasOwnProperty(id)) {
 			//Add spotifyArtist
@@ -116,25 +105,29 @@ class ArtistDetails extends Component {
 			return;
 		}
 
-		eventUpdateStore.addArtist(id);
+		pendingArtists.push(availableArtists.find(artist => artist.id === id));
+		this.setState({ pendingArtists }, () => {
+			eventUpdateStore.addArtist(id);
 
-		if (eventUpdateStore.artists.length === 1) {
-			const { availableArtists } = this.state;
-			const selectedArtist = availableArtists.find(a => a.id === id);
-			if (selectedArtist && selectedArtist.image_url) {
-				if (!eventUpdateStore.event.promoImageUrl) {
-					//Assume the promo image is the headliner artist
-					eventUpdateStore.updateEvent({
-						promoImageUrl: selectedArtist.image_url
-					});
-				}
+			if (eventUpdateStore.artists.length === 1) {
+				const { availableArtists } = this.state;
+				const selectedArtist = availableArtists.find(a => a.id === id);
+				if (selectedArtist && selectedArtist.image_url) {
+					if (!eventUpdateStore.event.promoImageUrl) {
+						//Assume the promo image is the headliner artist
+						eventUpdateStore.updateEvent({
+							promoImageUrl: selectedArtist.image_url
+						});
+					}
 
-				//If here's no event name yet, assume the event name to be the headlining artist
-				if (!eventUpdateStore.event.name) {
-					eventUpdateStore.updateEvent({ name: selectedArtist.name });
+					//If here's no event name yet, assume the event name to be the headlining artist
+					if (!eventUpdateStore.event.name) {
+						eventUpdateStore.updateEvent({ name: selectedArtist.name });
+					}
 				}
 			}
-		}
+		});
+
 	}
 
 	onDelete(index) {
@@ -212,15 +205,23 @@ class ArtistDetails extends Component {
 				});
 				results = results.data.data;
 				const spotifyArtists = {};
+				const spotifyResults = [];
+				const availableArtists = [];
 				results
-					.filter(artist => !artist.id && artist.spotify_id)
 					.forEach(artist => {
-						spotifyArtists[artist.spotify_id] = true;
+						if (!artist.id && artist.spotify_id) {
+							spotifyArtists[artist.spotify_id] = true;
+							spotifyResults.push(artist);
+						} else {
+							availableArtists.push(artist);
+						}
+
 					});
 				this.setState({
 					isSearching: false,
 					spotifyAvailableArtists: results,
-					spotifyArtists
+					spotifyArtists,
+					availableArtists
 				});
 			} catch (e) {
 				this.setState({ isSearching: false });
@@ -360,7 +361,7 @@ class ArtistDetails extends Component {
 
 	render() {
 		const { classes, errors } = this.props;
-		const { availableArtists, showArtistSelect } = this.state;
+		const { pendingArtists, showArtistSelect } = this.state;
 		const { artists, artistTypeActiveIndex } = eventUpdateStore;
 
 		return (
@@ -368,34 +369,26 @@ class ArtistDetails extends Component {
 				<FlipMove staggerDurationBy="50">
 					{artists.map((eventArtist, index) => {
 						const { id, setTime, importance } = eventArtist;
+						const { artist = pendingArtists.find(i => i.id === id) } = eventArtist;
 
-						let name = "Loading..."; // If we haven't loaded all the available artists we won't have this guys name yet
-						let thumb_image_url = "";
-						let socialAccounts = {};
-						if (availableArtists) {
-							const artist = availableArtists.find(artist => artist.id === id);
-
-							if (artist) {
-								name = artist.name;
-								thumb_image_url = artist.thumb_image_url || artist.image_url;
-								const {
-									bandcamp_username,
-									facebook_username,
-									instagram_username,
-									snapchat_username,
-									soundcloud_username,
-									website_url
-								} = artist;
-								socialAccounts = {
-									bandcamp: bandcamp_username,
-									facebook: facebook_username,
-									instagram: instagram_username,
-									snapchat: snapchat_username,
-									soundcloud: soundcloud_username,
-									website: website_url
-								};
-							}
-						}
+						const name = artist.name;
+						const thumb_image_url = artist.thumb_image_url || artist.image_url;
+						const {
+							bandcamp_username,
+							facebook_username,
+							instagram_username,
+							snapchat_username,
+							soundcloud_username,
+							website_url
+						} = artist;
+						const socialAccounts = {
+							bandcamp: bandcamp_username,
+							facebook: facebook_username,
+							instagram: instagram_username,
+							snapchat: snapchat_username,
+							soundcloud: soundcloud_username,
+							website: website_url
+						};
 
 						let active = index === artistTypeActiveIndex;
 						const isCancelled = eventArtist.status === "Cancelled";
@@ -473,7 +466,6 @@ class ArtistDetails extends Component {
 
 ArtistDetails.propTypes = {
 	eventId: PropTypes.string,
-	artists: PropTypes.array.isRequired,
 	errors: PropTypes.object.isRequired
 };
 
